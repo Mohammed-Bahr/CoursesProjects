@@ -186,4 +186,3 @@ My Folder > echo "new line" >> files.txt
 5. **Memory**: `cat` and `wc` use `Files.readAllLines()` - loads entire file into memory
 6. **CP Destination Behavior**: Requires destination file to exist (unlike Unix `cp` which creates it)
 
-This is a well-structured educational shell implementation demonstrating Java NIO.2 (`java.nio.file`) capabilities, regex parsing, and stream I/O operations.
