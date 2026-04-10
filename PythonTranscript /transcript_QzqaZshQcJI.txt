@@ -1,0 +1,647 @@
+So before we get started, I want to show
+you why this video is worth your time
+and why it's important to be talking
+about open code right now. Because tools
+come and go, but momentum and ecosystem
+usually tells you what's going to stick.
+I've collected these three different
+screenshots here that really show
+something interesting. It really shows
+why Open Code is worth your time right
+now. So when we look at Cloud Code on
+GitHub, it has around 67,000 stars. But
+when we look at Open Code, it has
+105,000 stars. In this month alone, it's
+gotten 36,517
+stars on GitHub. Anyways, Open Code is
+more popular than Claude Code. So, I
+think it's safe to say that Open Code is
+not just new and shiny. It's already
+ahead in the community adoption signals.
+But this screenshot here really shows
+the velocity that's happening. So, it
+shows that people are switching. People
+are making content, building plugins,
+and the workflow is spreading. So, why
+does this matter? When a tool is moving
+this fast, you usually get better
+documentation, more tutorials, more
+community configurations, and more I hit
+this bug and here's the fix post that
+makes your learning curve shorter. All
+right, now that this isn't a random
+weekend project, let's talk about how
+open code actually works so the setup
+makes sense. Let's start first by
+thinking about what open code really is.
+So, Open Code is really the open- source
+version of cloud code. So it can do
+almost everything that cloud code can
+do. Plus it's has an MIT license and is
+100% open source and on top of that it's
+provider agnostic. You can use it with
+cloud, you can use it with open AI, you
+can use it with Google and you can even
+use it with local models. This is what I
+think. If you want flexibility and an
+[music] open tool that you can shape,
+open code is probably the better choice.
+But if you want to go the official
+anthropic path and you're already
+standardized, then cloud code may be the
+better choice for you. The most valuable
+point on open code is really this that
+it's provider agnostic. Because when you
+think about what just happened, for
+instance, Enthropic came out with their
+new AI model and then so did OpenAI.
+Enthropic said that this was their most
+powerful coding model and then OpenAI
+came out with one that was actually
+better for coding, right, the 5.3
+codeex. And so it's nice to be able to
+try them both. To me, this is a really
+important point that it's provider
+agnostic, so you can switch around from
+different ones. In this video, what I'm
+going to be showing you guys is how to
+set up Open Code on Windows. We're going
+to install Open Code in a Windows
+friendly way with WSL. We're going to
+connect models and providers and
+understand where the credentials live.
+and I'm going to show you guys how you
+can use build mode and plan mode
+effectively and when to switch between
+them. We're also going to set up some
+project rules with agents.md and a quick
+refresher on this as well. And then
+we'll create we'll create some skills
+and commands that will work globally or
+per repo. Why are we going to install it
+on WSL? Really? Because that's what Open
+Code recommends for the best performance
+and terminal compatibility. So, I'm not
+going to walk you guys through how to
+install WSL, but this is the command
+that you'll want to use. Just go to your
+terminal, type in WSL-install,
+and then it will work for you. And then
+we're going to pick it up from right
+here. We're going to use this command to
+install Open Code, and then we'll go
+from there. How should we think about
+Open Code? Well, open code is easiest to
+think of as three layers. First, we have
+the agents layer. Who's doing the work?
+Who's [music] driving right now? You'll
+mainly use the build mode and then the
+plan mode. The build mode is the do work
+mode and the plan mode is think safely.
+If you're new to a codebase, plan keeps
+you from letting an agent bulldoze the
+repo and just run off the rails. Now,
+the second layer is rules. How should
+the agents behave in this repo? That's
+the agents MD that tells the model your
+project conventions, structure, and
+do/dones
+[music] rules. Think of this as like
+your onboarding notes for a new
+teammate, how to run tests, the folder
+structure, formatting rules, what not to
+touch, how pull requests and commits
+work. Without this, you'll end up
+repeating yourself every prompt. Now,
+the third layer is the extensions.
+[music] How we automate repeatable work.
+Skills are the reusable playbooks that
+the agents can load. And then the
+commands are like oneshot buttons that
+you can run with a slashname. Whenever
+you're first getting started with open
+code, you don't want to overbuild a
+giant skills library on day one. You
+just want to focus on two to three real
+tasks first and then codify what you end
+up repeating. It's really good to just
+start with a well-rounded agents MD and
+using the agents effectively the build
+agent and the plan agent. This is the
+setup that we're going to have. We're
+going to use cursor for editing, open
+code for agent runs in a WSL
+environment. And now the goal is cursor
+is the editor, WSL is the runtime. Open
+code runs in WSL and edits the same
+files that cursor has open. So the
+biggest win here is really consistency.
+One copy of the repo, one set of
+credentials, and one tool chain. The
+workflow is going to be like this. We're
+going to open up the repo in cursor
+using the WSL file system integration.
+Open a WSL terminal in that same repo
+folder and then run open code from
+there. Now, a good rule of thumb is if
+your IDE shows that WSL in the bottom
+left, then you got your setup properly
+working. Let's hop over to our file
+system and open up cursor and I'll show
+you guys how to set this up. I'm going
+to assume that you have WSL installed at
+the very least. Now, whenever we open up
+a terminal, we're going to go to the top
+here and this little arrow that's
+pointing down, we'll click that and we
+can switch to WSL just by hitting this,
+the Ubuntu. And now we're in our WSL.
+What we're going to do is we're going to
+make a new folder for our project. Let's
+see where we're at right now. We'll go
+inside of coding projects. We're inside
+of the coding projects. We're going to
+make a new directory and we're going to
+call it open code demo. We'll go ahead
+and change into that directory. Open
+code demo. And now we'll just go ahead
+and run a cursor dot. We're going to
+open cursor up inside of this directory.
+And here at the bottom, you can see it's
+opening up the remote. with setting it
+up. Now, we have that going and there's
+nothing inside of here yet. Now, we need
+to install Open Code. And it really
+doesn't matter in which order you do
+this. Like, we didn't have to open up
+the directory before installing Open
+Code. I'm just getting it set up. So,
+you could do this before, but on the
+Open Code.AI docs, it gives us this
+command to run. We're going to run that
+now. It's finished installing. We're
+going to go ahead and run Open Code in
+this directory. Looks like we may need
+to reset our terminal. I'm just going to
+copy this and we're going to open a new
+one. You have two options here. You
+could run the terminal user interface
+here with a separate window, which is
+the way that I like to do it, or inside
+a cursor. I'll show you why I like to
+have it in a separate window. If we hit
+controlB, it conflicts with cursor. It's
+a little bit harder to use there. That's
+why I have a separate window open for
+it. Now that we're inside of Open Code,
+what's really nice is that they
+automatically include free models
+without us doing anything. You can see
+we're running on this model here, the
+Big Pickle from Open Code Zen. And we
+can ask anything, we just say hello to
+make sure it's working. Even just for a
+simple hello though, it took 16 seconds
+just to get back hello, how can I help
+you? Even though Open Code does include
+free models, it takes a little while.
+They're not the best. When we hit
+control P, we can see all the different
+commands that are already built into
+Open Code. And they're broken down by
+category. The suggested category for
+switching sessions, switching models.
+And they have a few here for free as
+well, the Miniax, the Kimmy, and the
+GLM5, and the Big Pickle. And we can
+also connect popular providers here. I
+have the Chat GPT plus plan. We're going
+to go ahead and select that. and we're
+going to connect it with browser. And
+I'm just going to log in here. We have
+authorized successfully. We can go ahead
+and close this. And now we can choose
+which model that we want to use. I'm
+going to use the GPT 5.3 codeex because
+that's their most advanced model right
+now. But if we wanted to switch models,
+then we would just come back here and we
+can choose which model we would like to
+use. The next thing here is whenever
+we're switching between modes, we're
+[music] going to use the tab button. We
+can see when we hit tab, it changes down
+here from build to plan and back and
+forth. Really using open code
+effectively or cloud code or any sort of
+AI assisted programming application. It
+really comes down to using both the
+build mode and the plan mode
+effectively. I'm going to break down
+when to use which for you. The build
+mode is just do the work mode. The agent
+gets full tool access, edits, bash for
+implementation. You want to use this
+when you're ready for code changes, and
+that's best for adding features,
+refactoring, fixing tests. A tip as well
+is keep your prompts specific. Make
+change X, run test Y, show diff. Now,
+the plan mode, that's the think safely
+mode, is restricted by permissions to
+prevent unintended changes. It defaults
+any risky actions to ask. But it's going
+to ask you before it does anything,
+before it runs any sort of risky
+commands. And that's best for designing
+code reviewing, debugging strategy,
+really just making a solid plan. The
+practical workflow here is you want to
+start in plan mode. You always want to
+start in plan mode [music] and then
+confirm your approach. Get that super
+solid. Make that bulletproof. And once
+that's bulletproof, then switch to build
+mode. And then you'll implement it. And
+then you'll switch back to plan mode for
+review. Now the next step for us is to
+initialize open code in our repo in our
+directory in our folder. And what this
+is going to do whenever we run this
+command here the init that's going to
+generate an agents.md
+in our repo root. [music] And now what
+is that agents MD? It's going to be
+custom instructions for the repo. It's
+going to explain the structure, the
+conventions, the dos, don'ts. The main
+point is that it helps Open Code
+navigate your codebase faster and safer.
+That's what it's all about. And here's
+an example of a simple agent MD
+template. It has the setup commands on
+how to set up the repo and it has some
+code style instructions. A tip whenever
+you're doing this is you'll want to
+commit your agents MD so that your whole
+team gets consistent agent behavior. The
+goal is just enough structure that the
+agent behaves like a teammate who read
+the readme. Now we'll run that command.
+We'll hit init. And that's also what's
+really nice about open code is whenever
+you hit the slash, you can see all the
+different commands that currently exist.
+It's currently inspecting the repo. It's
+making an execution plan and going with
+it from there. This time it looks like
+it even asked me a question. Is this the
+correct repository path or should I
+analyze a different directory? Let me
+see. Let's make sure that yep, that's
+the right one. Say, yep. And on Windows,
+if you wanted to type with your voice,
+you would just hit Windows H. And now it
+will start recording my voice. That's
+how you can implement that. If you
+wanted to vibe code with your voice is
+just the Windows key and H. That's the
+shortcut. Ah, so I see. So you see the
+importance of making sure that you're in
+the correct mode whenever you start
+coding. It's currently in plan mode, so
+that's why it keeps asking me questions
+and asking me to do more things. So,
+we're going to hit Ctrl P and we'll make
+a new session. And this time, we'll
+switch out of plan mode and we'll run
+[music] a netit. Now, the agents.m MD
+file is created. And I thought this last
+message is really important. So, I want
+to point that out to you. It says the
+repository route is currently empty. So,
+the commands are in intentionally a
+bootstrap matrix until real project
+scripts/configs are added. So, that
+really comes back to the whole point.
+Agents.m MD is not a write it once and
+forget it. Agents MD is this file that's
+living. It's going to change as your
+repository changes. You can see
+currently all the things that it's done.
+It even has instructions here for if
+cursor or copilot rules appear [music]
+later. It has build and lint commands.
+It has everything with the JavaScript,
+Python, Go, Rust. So, it's really
+complete. Not all this is going to be
+super important for your individual
+repo. This is a living document. you
+want to change it as your project
+changes. And if you wanted to dig deeper
+into the agents.md format and its
+purpose, you can go to agents.mmd on
+online and you can see some more
+additional information and some good
+examples of some agents.mds. And you can
+see here how they recommend using it.
+Add the file, cover what matters, add
+extra instructions, and you can even use
+these nested agents.md files for sub
+projects. At this point, we're pretty
+ready to start making some cool
+projects. We're ready to start using it.
+I'm going to ask it to just generate a
+basic flask application. I'm going to
+say make a basic flask website for my
+plumbing company. This is our color
+scheme. And I found this color scheme
+off of colorhunt.co.
+And I really like this website because
+it's color palettes that have been
+curated by professional designers and
+it's their favorite ones and you can
+even see how many likes each one gets.
+So, it's a cool resource to check out.
+It's completed the application and it's
+given me these commands to run it
+locally. We'll go ahead and run those.
+Let's go ahead and open that up. Now,
+you can see here how well it's used our
+color scheme. And yeah, it looks really
+nice. And I'll show you something else,
+too. If we make this full screen, you
+can see that on this right side under
+context, it shows us the number of
+tokens that we used, how much of the
+context window that we're taking up, and
+also the number of dollars spent. We can
+track all that here. And then we can
+also track LSPs. This will activate as
+files are read. And this is what an LSP
+is. It's a language server protocol.
+It's an open JSON RPC based standard
+that allows code editors to communicate
+with language specific intelligence
+tools. That's quite a mouthful. So let
+me break that down for you. I came
+across this diagram and I think it
+explains it really well. When we have
+our development tool here, it goes back
+and forth with the language server. You
+think about you open a document that's
+going to send a notification over to the
+language server. If you edit a document,
+it's going to send a notification over
+to the language server. And now the
+language server is going to analyze the
+changes and look for any sorts of
+problems and then [music] send it back.
+The main point of an LSP is this. It
+lets any editor get smart code features.
+You think about autocomplete, go-to
+definition, references, hover docs,
+linting, rename, refactors without the
+editor needing language specific logic.
+The LSP is really going to assist the
+agent in writing code. Now, as we build
+this site out, you think there's going
+to be a lot of repeat prompts. For
+instance, if we're going to add a new
+page, there's going to be a particular
+way that we may want to have that page
+structured. There's going to be, as we
+use open code, there's going to be
+prompts that we would like to save. And
+that brings us to our next topic, skills
+and commands. You can think of skills
+this way as a reusable playbook. They're
+not commands you run. They're knowledge
+modules that the agent can load when it
+hits a specific kind of task. So
+example, this will be a skill for how we
+write migrations or how do we make a new
+endpoint, how do we make a new page and
+how do we write tests [music] in this
+repo. The benefit is consistently this.
+instead of reexplaining your team
+standards every time you encode them
+once. Now, as you get more comfortable
+with using open code and as your repo
+grows, you're naturally going to build
+skills. There's no point in putting a
+whole lot of effort from day one [music]
+and coming up with all these different
+skills. But once you notice yourself
+repeating yourself, that's a signal that
+you may want to capture that as a skill.
+And there's a particular structure as
+well for where to put skills. If you
+want it to be per project, you'll put it
+inside of a folder, you'll call it open
+code. And then you'll make another
+folder inside of that and so forth. And
+then if you want it to be a global
+skill, you can put it inside of your
+config. And you can also even add
+permissions for it. So the discovery
+behavior works like this as well. Open
+code walks up to the git worksheet and
+loads any matching skills. And global
+skills are always available in every
+repo. And here we see an example of one
+of a front the required front matter. It
+needs a name and it needs a description
+and then from there you can continue
+with it however you'd like. And now
+commands are very similar but you can
+think of these as workflow shortcuts.
+Commands are more like buttons you
+press, not so much as playbooks. A
+command is something that you explicitly
+run like maybe slash test or slash
+review or slash ship. And you're going
+to run these in the open code terminal
+user interface. Commands are really
+great when you want repeatability. They
+reduce the amount of typing and the
+number of prompt mistakes. And here as
+well there's a particular place that you
+want to put them as well per project and
+globally. And here's an example of one
+for a slash test. You give it a
+description the which agent you want and
+a model. And [music] then you can put in
+whatever sort of prompt that you like.
+So run the full test suite with
+coverage, focus on failing tests and
+suggest [music] edits. You can also add
+arguments and placeholders by using a
+dollar sign arguments. And you can even
+which you can see here actually
+/component button create a React
+component named button. That's where
+that would come in. And then for more
+than one argument, you would just use a
+dollar sign and then a number. You'd
+give it a description and then write
+your prompt. And then you would put the
+dollar sign and then the number of
+arguments. Now you would create a file
+named config.json
+in source with the contents of key
+value. And again just to reiterate,
+commands are like repeatable prompts.
+It's do this. Now skills are how we do
+this here. Commands are prompts. Skills
+are those knowledge playbooks. And if
+you wanted to go deeper on any of these
+topics, you can just find them in the
+open code.ai docs. So you can see for
+instance for the it breaks down the
+required front matter for a skill to
+work and [music] the places to put the
+files etc. And along with the commands
+as well gives you a little bit more meat
+as if you want to go deeper in these.
+Let's go ahead and try to make our own
+command and skill. Now I've actually put
+together a skill already. We'll go ahead
+and we're going to copy this folder with
+this built-in skill and we're going to
+put it in our config for open code.
+We're going to put it right there. I'll
+show you what that looks like as well.
+This command helps scaffold a new open
+code skill or command. And the usage
+works like this. /caffold
+skill name or scaffold command [music]
+name. You are scaffolding a new open
+code resource. The type is one [music]
+and the name is two. If you look at it
+like this, you're going to run /
+scaffold either skill and the name is
+whatever you put there. And then it's
+going to follow these instructions for
+each one to help us create either a
+skill or a command. And we also have
+global skill and global command. We have
+that loaded in our global. We'll go
+ahead and try it out. After you add a
+new command, you're going to need to
+restart your open code. We'll hit C and
+we'll open it up again. If we go ahead
+and use our command and we'll run
+scaffold and we'll make this a new
+command and we're going to call this one
+a website or let's say web page.
+Actually, this will be a command that we
+run that will go ahead and make a new
+web page inside of our app. Now, if we
+look inside our directory, it's put
+together a web page command for us.
+Create a web page from a [music] prompt
+with clear structure and styling. So,
+it's even bootstrapped our command for
+us. Let's go ahead and hit Ctrl + C to
+get out of it and we'll reopen [music]
+it. If we do a web page, then it runs
+that prompt for us. Another thing too is
+you can see we're on GPT 5.3 codeex, but
+if we wanted to change our level of
+thinking, we can hit control T and now
+we're adjusting the level of thinking on
+that, but we'll keep it regular for now.
+It's completed a a web page here,
+index.html, and it's included everything
+that it needs. Now, when we look at our
+context, you can see we're already at
+17,000 tokens. That's not too bad. It's
+only 4% used, but I'll show you a
+command as that starts to get higher.
+You can just run slash compact, and
+that's going to compact the session.
+That's going to summarize the session.
+Now, we went from 4% used to 2% used and
+9,000 tokens. Let's go ahead and
+scaffold a new skill. We'll call this
+skill and we'll say that this is a
+copywriting skill. And we can see now
+that it's bootstrapped for us a
+copywriting skill. What I want to do
+though is I'm a really big fan of high
+focus language. So high focus language
+is whenever you speak to the [music]
+person directly and you show them the
+value very clearly. Everyone has their
+own definitions on what high focus means
+to them. I have some instructions here
+and I'm going to go ahead and reference
+those instructions. We can see that it
+completed it successfully and included
+this in its references and it's added
+the document to the copywriting skill.
+So, we can go ahead and delete this one.
+Let's go ahead and modify the copy on
+this page. Currently, we see it says
+plumbing done right the first time. From
+emergency leaks to full fixture
+installs, our experienced team keeps
+your water flowing and your home
+protected. Let's go ahead and use our
+skill. Whenever we run the slash skills
+command, you can see because it was just
+added, it's not loaded. We just need to
+go ahead and do control C open code. And
+now if we let's switch sessions.
+Actually, this is the one here. And
+we'll go ahead and we'll run skills. And
+we'll say this is the skill we want to
+run. And I'll say adjust the copy on the
+homepage. Looking at the copy now after
+it's made the changes, it says that it's
+updated the copy to be more benefitled
+and high focus aligned. And it gives us
+a summary of the changes that it's made.
+You can see the clear user value and
+next steps is a little bit more solid.
+That should give you a really solid
+introduction to open code. Just to
+recap, this is the workflow that you'll
+do every time that you open up a new
+codebase. You'll put the repo in one
+environment, preferably the WSL
+environment. Then you'll open up open
+code in that same environment. You'll
+connect your model provider there. Use
+whichever one you want. Then you'll do
+your slashinit to generate your
+agents.md. Then as you develop, you'll
+come up with different commands that you
+think you want to add either for your
+global projects or for that individual
+repo. And then you'll also add skills
+remembering the difference. [music]
+Commands are like buttons, repeatable
+prompts, and skills are more like
+playbooks for the agent to follow. If
+you wanted to go deeper on any of these
+topics, there's this really awesome
+article that I read about how coding
+agents actually work and inside of Open
+Code. Even this architecture breakdown
+is really nice. It gives you a really
+deep dive into how everything is
+working. If you want to check this out,
+what you can do is click the link in the
+description, join our school community,
+and there'll be a post that has this
+video on it, and I'm going to link this
+article as well. If you want to check
+that out, that'll be there. That'll be
+it for this video. Thank you so much for
+sticking to the end. If you enjoyed this
+video, give it a like. Subscribe for
+more content like this. If you'd like to
+check out some of my other tech demos,
+you can check that out right over here.
