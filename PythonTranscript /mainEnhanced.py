@@ -269,7 +269,6 @@ from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, Tran
 # CONFIGURATION
 # ─────────────────────────────────────────────
 
-GROQ_API_KEY = "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"
 GROQ_MODEL   = "llama3-8b-8192"   # fast & capable; change to "mixtral-8x7b-32768" for longer transcripts
 
 
