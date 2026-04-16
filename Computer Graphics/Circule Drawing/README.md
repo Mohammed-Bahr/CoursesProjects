@@ -3,9 +3,9 @@
 > — Zig Ziglar
 
 ```horizontal
-![[Attachments/1.jpeg]]
+![Image1](./Attachments/1.jpeg)
 ---
-![[Attachments/2.jpeg]]
+![Image1](./Attachments/2.jpeg)
 ```
 
 ### **The Goal**
