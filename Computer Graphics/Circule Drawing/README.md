@@ -2,11 +2,9 @@
 > [!quote] You are the only person on Earth who can use your ability.
 > — Zig Ziglar
 
-```horizontal
 ![Image1](./Attachments/1.jpeg)
----
+
 ![Image1](./Attachments/2.jpeg)
-```
 
 ### **The Goal**
 
