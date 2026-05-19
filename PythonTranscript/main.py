@@ -1,120 +1,137 @@
-from youtube_transcript_api import YouTubeTranscriptApi
-import re
+"""
+YouTube Transcript Exporter
+---------------------------
+Fetches a YouTube transcript and saves it to a Markdown file.
+
+Requirements:
+    pip install youtube-transcript-api
+"""
+
 import os
+import re
+from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
 
 
-def extract_video_id(input_str):
-    """Extract video ID from a YouTube URL or return as-is if already an ID."""
+def extract_video_id(user_input: str) -> str | None:
+    """Extract an 11-character video ID from a URL or plain ID string."""
     patterns = [
-        r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",
-        r"(?:youtu\.be\/)([0-9A-Za-z_-]{11})",
+        r"(?:v=|\/shorts\/|youtu\.be\/)([0-9A-Za-z_-]{11})",
     ]
     for pattern in patterns:
-        match = re.search(pattern, input_str)
+        match = re.search(pattern, user_input)
         if match:
             return match.group(1)
-    # Assume it's already a video ID if 11 chars
-    if re.match(r"^[0-9A-Za-z_-]{11}$", input_str.strip()):
-        return input_str.strip()
+    if re.fullmatch(r"[0-9A-Za-z_-]{11}", user_input.strip()):
+        return user_input.strip()
     return None
 
 
-def get_available_languages(api, video_id):
-    """List all available transcript languages for the video."""
+def get_user_input() -> tuple[str, str, bool]:
+    """Prompt user for video input, language, and timestamps preference."""
+    print("=" * 55)
+    print("   YouTube Transcript Exporter")
+    print("=" * 55)
+
+    while True:
+        raw = input("\nYouTube URL or Video ID: ").strip()
+        video_id = extract_video_id(raw)
+        if video_id:
+            print(f"   Video ID: {video_id}")
+            break
+        print("   Invalid URL or ID. Please try again.")
+
+    language = input("\nTranscript language code [default: en]: ").strip() or "en"
+    include_ts = input("\nInclude timestamps? (yes/no) [default: yes]: ").strip().lower()
+    include_timestamps = include_ts not in ("no", "n")
+
+    return video_id, language, include_timestamps
+
+
+def list_available_languages(video_id: str) -> list[str]:
+    """Return available language codes for a video."""
     try:
-        transcript_list = api.list(video_id)
-        languages = []
-        for t in transcript_list:
-            label = f"{t.language} ({t.language_code})"
-            if t.is_generated:
-                label += " [auto-generated]"
-            languages.append((t.language_code, label))
-        return languages
-    except Exception as e:
-        print(f"  Could not fetch language list: {e}")
+        transcript_list = YouTubeTranscriptApi().list(video_id)
+        return [t.language_code for t in transcript_list]
+    except Exception:
         return []
 
 
-def save_transcript(transcript, output_path, include_timestamps):
-    """Save transcript lines to a text file."""
-    with open(output_path, "w", encoding="utf-8") as f:
-        for line in transcript:
-            if include_timestamps:
-                minutes = int(line.start // 60)
-                seconds = int(line.start % 60)
-                f.write(f"[{minutes:02d}:{seconds:02d}] {line.text}\n")
-            else:
-                f.write(line.text + "\n")
-
-
-def main():
-    print("=" * 50)
-    print("   YouTube Transcript Downloader")
-    print("=" * 50)
-
-    # --- Step 1: Get Video ID ---
-    while True:
-        user_input = input("\n📺 Enter YouTube video URL or video ID: ").strip()
-        if not user_input:
-            print("  ⚠️  Input cannot be empty. Please try again.")
-            continue
-        video_id = extract_video_id(user_input)
-        if video_id:
-            print(f"  ✅ Video ID detected: {video_id}")
-            break
-        else:
-            print("  ❌ Could not extract a valid video ID. Please try again.")
-
+def fetch_transcript(video_id: str, language: str) -> list[dict]:
+    """Fetch transcript lines and normalize to dicts with text/start keys."""
     api = YouTubeTranscriptApi()
-
-    # --- Step 2: Show available languages ---
-    print("\n🌐 Fetching available languages...")
-    languages = get_available_languages(api, video_id)
-    if languages:
-        print("  Available languages:")
-        for code, label in languages:
-            print(f"    • {label}")
-    else:
-        print("  Could not retrieve language list. You can still try manually.")
-
-    # --- Step 3: Choose language ---
-    lang_input = input("\n🔤 Enter language code (e.g. 'en', 'ar') [default: en]: ").strip()
-    language = lang_input if lang_input else "en"
-    print(f"  ✅ Language selected: {language}")
-
-    # --- Step 4: Timestamps option ---
-    ts_input = input("\n⏱️  Include timestamps? (yes/no) [default: no]: ").strip().lower()
-    include_timestamps = ts_input in ("yes", "y")
-
-    # --- Step 5: Output filename ---
-    default_filename = f"transcript_{video_id}.txt"
-    file_input = input(f"\n💾 Output filename [default: {default_filename}]: ").strip()
-    output_file = file_input if file_input else default_filename
-
-    # Add .txt extension if missing
-    if not output_file.endswith(".txt"):
-        output_file += ".txt"
-
-    # --- Step 6: Fetch and save ---
-    print(f"\n⏳ Fetching transcript...")
     try:
         transcript = api.fetch(video_id, languages=[language])
-        save_transcript(transcript, output_file, include_timestamps)
+        return [{"text": line.text, "start": line.start} for line in transcript]
+    except NoTranscriptFound:
+        available = list_available_languages(video_id)
+        msg = f"No transcript found for language '{language}'."
+        if available:
+            msg += f" Available: {', '.join(available)}"
+        raise ValueError(msg)
+    except TranscriptsDisabled:
+        raise ValueError("Transcripts are disabled for this video.")
+    except Exception as exc:
+        raise ValueError(f"Unexpected error fetching transcript: {exc}")
 
-        size = os.path.getsize(output_file)
-        line_count = sum(1 for _ in open(output_file, encoding="utf-8"))
 
-        print(f"\n✅ Transcript saved successfully!")
-        print(f"   📄 File    : {output_file}")
-        print(f"   📝 Lines   : {line_count}")
-        print(f"   📦 Size    : {size / 1024:.1f} KB")
+def format_timestamp(seconds: float) -> str:
+    """Convert seconds to MM:SS."""
+    minutes = int(seconds // 60)
+    secs = int(seconds % 60)
+    return f"{minutes:02d}:{secs:02d}"
 
-    except Exception as e:
-        print(f"\n❌ Failed to fetch transcript: {e}")
-        print("   Tips:")
-        print("   • Make sure the video ID is correct")
-        print("   • Check if the selected language is available")
-        print("   • Some videos may have transcripts disabled")
+
+def build_markdown(video_id: str, lines: list[dict], include_timestamps: bool) -> str:
+    """Build Markdown output with transcript content only."""
+    md_lines = [f"# Transcript for {video_id}\n", "## Transcript\n"]
+
+    for line in lines:
+        if include_timestamps:
+            ts = format_timestamp(line["start"])
+            md_lines.append(f"- [{ts}] {line['text']}")
+        else:
+            md_lines.append(f"- {line['text']}")
+
+    return "\n".join(md_lines)
+
+
+def save_markdown(content: str, video_id: str) -> str:
+    """Save markdown to user-selected file and return its name."""
+    default_name = f"transcript_{video_id}.md"
+    filename_input = input(f"\nOutput filename [default: {default_name}]: ").strip()
+    filename = filename_input if filename_input else default_name
+
+    if not filename.endswith(".md"):
+        filename += ".md"
+
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(content)
+
+    return filename
+
+
+def main() -> None:
+    """Run transcript export flow."""
+    video_id, language, include_timestamps = get_user_input()
+
+    print("\nFetching transcript from YouTube...")
+    try:
+        lines = fetch_transcript(video_id, language)
+    except ValueError as err:
+        print(f"\nError: {err}")
+        return
+
+    line_count = len(lines)
+    print(f"   {line_count} lines fetched.")
+
+    markdown_content = build_markdown(video_id, lines, include_timestamps)
+    output_file = save_markdown(markdown_content, video_id)
+
+    size_kb = os.path.getsize(output_file) / 1024
+    print("\nDone!")
+    print(f"   File : {output_file}")
+    print(f"   Lines: {line_count}")
+    print(f"   Size : {size_kb:.1f} KB")
 
 
 if __name__ == "__main__":
