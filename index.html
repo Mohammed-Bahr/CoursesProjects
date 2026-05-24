@@ -1,0 +1,2627 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Branch &amp; Bound — Integer Programming Solver</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <style>
+            :root {
+                --bg: #f8f9fb;
+                --bg-card: #ffffff;
+                --bg-muted: #f1f3f7;
+                --border: #e2e6ed;
+                --border-strong: #c8cdd8;
+                --text: #1a1d23;
+                --text-secondary: #5a6278;
+                --text-muted: #8b93a8;
+                --accent: #3b5bdb;
+                --accent-light: #eef2ff;
+                --accent-hover: #2f4ac0;
+                --success: #2f9e44;
+                --success-bg: #ebfbee;
+                --danger: #c92a2a;
+                --danger-bg: #fff5f5;
+                --warning: #e67700;
+                --warning-bg: #fff9db;
+                --purple: #7048e8;
+                --purple-bg: #f3f0ff;
+                --node-branched: #e67700;
+                --node-integer: #2f9e44;
+                --node-pruned: #c92a2a;
+                --node-infeasible: #7048e8;
+                --node-root: #3b5bdb;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: "Inter", sans-serif;
+                min-height: 100vh;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .mono {
+                font-family: "JetBrains Mono", monospace;
+            }
+
+            /* Header */
+            .header {
+                background: var(--bg-card);
+                border-bottom: 1px solid var(--border);
+                padding: 0.85rem 1.5rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            .header-inner {
+                max-width: 1600px;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .header-title {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--text);
+                letter-spacing: -0.01em;
+            }
+            .header-sub {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                font-family: "JetBrains Mono", monospace;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                margin-left: 0.75rem;
+            }
+            .header-badge {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                color: var(--text-secondary);
+                padding: 0.2rem 0.6rem;
+                background: var(--bg-muted);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+            }
+
+            /* Cards */
+            .card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 1.25rem;
+            }
+
+            .section-label {
+                font-size: 0.65rem;
+                font-weight: 600;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                margin-bottom: 0.9rem;
+                padding-bottom: 0.6rem;
+                border-bottom: 1px solid var(--border);
+            }
+
+            /* Form controls */
+            label {
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+                margin-bottom: 0.3rem;
+            }
+
+            input[type="text"],
+            input[type="number"],
+            select,
+            textarea {
+                width: 100%;
+                background: var(--bg-card);
+                border: 1px solid var(--border-strong);
+                color: var(--text);
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.8rem;
+                padding: 0.45rem 0.65rem;
+                border-radius: 5px;
+                outline: none;
+                transition:
+                    border-color 0.15s,
+                    box-shadow 0.15s;
+            }
+
+            input:focus,
+            select:focus,
+            textarea:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.12);
+            }
+
+            /* Buttons */
+            .btn {
+                font-family: "Inter", sans-serif;
+                font-size: 0.78rem;
+                font-weight: 600;
+                padding: 0.45rem 0.9rem;
+                border-radius: 5px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                transition: all 0.15s;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                white-space: nowrap;
+            }
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: white;
+                border-color: var(--accent);
+            }
+            .btn-primary:hover {
+                background: var(--accent-hover);
+                border-color: var(--accent-hover);
+            }
+
+            .btn-secondary {
+                background: var(--bg-card);
+                color: var(--text);
+                border-color: var(--border-strong);
+            }
+            .btn-secondary:hover {
+                background: var(--bg-muted);
+            }
+
+            .btn-danger {
+                background: var(--bg-card);
+                color: var(--danger);
+                border-color: var(--border-strong);
+            }
+            .btn-danger:hover {
+                background: var(--danger-bg);
+                border-color: var(--danger);
+            }
+
+            .btn-success {
+                background: var(--success);
+                color: white;
+                border-color: var(--success);
+                font-size: 0.82rem;
+                padding: 0.55rem 1.1rem;
+            }
+            .btn-success:hover {
+                background: #27883b;
+            }
+
+            /* Status badges */
+            .badge {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.6rem;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                padding: 0.15rem 0.45rem;
+                border-radius: 3px;
+                border: 1px solid;
+            }
+            .badge-branched {
+                background: var(--warning-bg);
+                color: var(--warning);
+                border-color: #fcd672;
+            }
+            .badge-integer {
+                background: var(--success-bg);
+                color: var(--success);
+                border-color: #8ce99a;
+            }
+            .badge-pruned {
+                background: var(--danger-bg);
+                color: var(--danger);
+                border-color: #ffa8a8;
+            }
+            .badge-infeasible {
+                background: var(--purple-bg);
+                color: var(--purple);
+                border-color: #b197fc;
+            }
+            .badge-active {
+                background: var(--accent-light);
+                color: var(--accent);
+                border-color: #bac8ff;
+            }
+
+            /* Info rows */
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.4rem 0;
+                border-bottom: 1px solid var(--border);
+                font-size: 0.8rem;
+            }
+            .info-row:last-child {
+                border-bottom: none;
+            }
+            .info-key {
+                color: var(--text-muted);
+                font-size: 0.72rem;
+            }
+            .info-val {
+                color: var(--text);
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+
+            /* Constraint row */
+            .constraint-row {
+                display: flex;
+                gap: 0.4rem;
+                align-items: center;
+                margin-bottom: 0.4rem;
+            }
+            .constraint-row input {
+                flex: 1;
+            }
+
+            /* Play button */
+            .play-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: var(--accent);
+                border: none;
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.9rem;
+                transition: all 0.15s;
+                box-shadow: 0 2px 8px rgba(59, 91, 219, 0.25);
+            }
+            .play-btn:hover {
+                background: var(--accent-hover);
+                transform: scale(1.05);
+            }
+
+            /* Iteration dots */
+            .iter-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                border: 2px solid var(--border-strong);
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .iter-dot.active {
+                background: var(--accent);
+                border-color: var(--accent);
+            }
+
+            /* Node log item */
+            .node-log-item {
+                padding: 0.45rem 0.55rem;
+                background: var(--bg-muted);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                cursor: pointer;
+                border-left: 3px solid;
+                transition: background 0.12s;
+                margin-bottom: 0.35rem;
+            }
+            .node-log-item:hover {
+                background: var(--accent-light);
+            }
+
+            /* Z value display */
+            .z-value {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--accent);
+            }
+
+            .best-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                background: #fff9db;
+                border: 1px solid #fcd672;
+                color: #b35900;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.68rem;
+                font-weight: 700;
+                padding: 0.25rem 0.65rem;
+                border-radius: 4px;
+                margin-top: 0.7rem;
+                letter-spacing: 0.05em;
+            }
+
+            /* Scrollbar */
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 5px;
+                height: 5px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-track {
+                background: var(--bg-muted);
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background: var(--border-strong);
+                border-radius: 3px;
+            }
+
+            /* Main layout */
+            .main-grid {
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 1.25rem;
+                display: grid;
+                grid-template-columns: 300px 1fr 290px;
+                gap: 1rem;
+            }
+
+            @media (max-width: 1100px) {
+                .main-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Flowchart section */
+            .flowchart-section {
+                max-width: 1600px;
+                margin: 0 auto 1.5rem auto;
+                padding: 0 1.25rem;
+            }
+
+            .flowchart-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 1.5rem;
+            }
+
+            .flowchart-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1.25rem;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            #flowchartCanvas {
+                width: 100%;
+                overflow: auto;
+                min-height: 420px;
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+            }
+
+            #flowchartSVG {
+                display: block;
+            }
+
+            /* Tree svg */
+            #treeCanvas {
+                width: 100%;
+            }
+            svg text {
+                font-family: "JetBrains Mono", monospace;
+            }
+
+            /* Node animation */
+            .node-card {
+                animation: fadeSlide 0.3s ease;
+            }
+            @keyframes fadeSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Stat chips */
+            .stat-chip {
+                background: var(--bg-muted);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 0.55rem 0.75rem;
+                text-align: center;
+            }
+            .stat-chip-label {
+                font-size: 0.62rem;
+                color: var(--text-muted);
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                margin-bottom: 0.2rem;
+            }
+            .stat-chip-value {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--text);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-inner">
+                <div style="display: flex; align-items: center">
+                    <span class="header-title">Branch &amp; Bound</span>
+                    <span class="header-sub">Integer Programming Solver</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem">
+                    <span id="hdr-nodes" class="header-badge">Nodes: —</span>
+                    <span
+                        id="hdr-best"
+                        class="header-badge"
+                        style="color: var(--accent)"
+                        >Best Z: —</span
+                    >
+                </div>
+            </div>
+        </header>
+
+        <!-- TOP 3-COLUMN LAYOUT -->
+        <div class="main-grid">
+            <!-- ═══ LEFT: Input Panel ═══ -->
+            <div style="display: flex; flex-direction: column; gap: 0.9rem">
+                <!-- Problem Definition -->
+                <div class="card">
+                    <div class="section-label">01 / Problem Definition</div>
+
+                    <div style="margin-bottom: 0.85rem">
+                        <label>Objective Function (Maximize)</label>
+                        <div
+                            style="
+                                display: flex;
+                                gap: 0.45rem;
+                                align-items: center;
+                            "
+                        >
+                            <span
+                                style="
+                                    font-family:
+                                        &quot;JetBrains Mono&quot;, monospace;
+                                    font-size: 0.78rem;
+                                    color: var(--accent);
+                                    font-weight: 600;
+                                    flex-shrink: 0;
+                                "
+                                >Z =</span
+                            >
+                            <input
+                                type="text"
+                                id="inp-obj"
+                                value="8x1 + 5x2"
+                                placeholder="8x1 + 5x2"
+                            />
+                        </div>
+                    </div>
+
+                    <div id="constraints-list" style="margin-bottom: 0.6rem">
+                        <label>Constraints</label>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 0.4rem;
+                            margin-bottom: 0.85rem;
+                        "
+                    >
+                        <button
+                            class="btn btn-secondary"
+                            onclick="addConstraint()"
+                            style="flex: 1"
+                        >
+                            + Add Row
+                        </button>
+                        <button
+                            class="btn btn-danger"
+                            onclick="removeLastConstraint()"
+                        >
+                            − Remove
+                        </button>
+                    </div>
+
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 0.5rem;
+                            margin-bottom: 0.85rem;
+                        "
+                    >
+                        <div>
+                            <label>x₁ lower bound</label>
+                            <input
+                                type="number"
+                                id="inp-x1lb"
+                                value="0"
+                                min="0"
+                            />
+                        </div>
+                        <div>
+                            <label>x₂ lower bound</label>
+                            <input
+                                type="number"
+                                id="inp-x2lb"
+                                value="0"
+                                min="0"
+                            />
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.4rem">
+                        <button
+                            class="btn btn-primary"
+                            onclick="solve()"
+                            style="
+                                flex: 1;
+                                justify-content: center;
+                                padding: 0.6rem;
+                            "
+                        >
+                            ▶ Solve
+                        </button>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="loadExample()"
+                        >
+                            Demo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="card">
+                    <div class="section-label">02 / Results</div>
+                    <div
+                        id="results-content"
+                        style="
+                            color: var(--text-muted);
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 0.73rem;
+                            text-align: center;
+                            padding: 1.2rem 0;
+                        "
+                    >
+                        Run solver to see results
+                    </div>
+                </div>
+
+                <!-- Node Log -->
+                <div class="card" style="overflow: hidden">
+                    <div class="section-label">03 / Node Log</div>
+                    <div
+                        id="node-log"
+                        class="scrollbar-thin"
+                        style="overflow-y: auto; max-height: 200px"
+                    >
+                        <div
+                            style="
+                                color: var(--text-muted);
+                                font-family:
+                                    &quot;JetBrains Mono&quot;, monospace;
+                                font-size: 0.72rem;
+                                text-align: center;
+                                padding: 1rem;
+                            "
+                        >
+                            No nodes yet
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Problems -->
+                <div class="card">
+                    <div class="section-label">06 / Saved Problems</div>
+                    <div
+                        style="
+                            display: flex;
+                            gap: 0.4rem;
+                            margin-bottom: 0.75rem;
+                        "
+                    >
+                        <input
+                            type="text"
+                            id="save-name"
+                            placeholder="Problem name…"
+                            style="flex: 1"
+                        />
+                        <button
+                            class="btn btn-primary"
+                            onclick="saveProblem()"
+                            style="flex-shrink: 0; padding: 0.45rem 0.7rem"
+                        >
+                            Save
+                        </button>
+                    </div>
+                    <div
+                        id="saved-list"
+                        class="scrollbar-thin"
+                        style="
+                            overflow-y: auto;
+                            max-height: 160px;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.35rem;
+                        "
+                    >
+                        <div
+                            style="
+                                color: var(--text-muted);
+                                font-size: 0.72rem;
+                                text-align: center;
+                                padding: 0.75rem 0;
+                            "
+                        >
+                            No saved problems
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ CENTER: Graph + Tree ═══ -->
+            <div style="display: flex; flex-direction: column; gap: 0.9rem">
+                <!-- Feasible Region Chart -->
+                <div class="card" style="flex: 1">
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 0.8rem;
+                            flex-wrap: wrap;
+                            gap: 0.5rem;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                font-weight: 600;
+                                letter-spacing: 0.1em;
+                                text-transform: uppercase;
+                                color: var(--text-muted);
+                            "
+                        >
+                            Feasible Region — Iteration
+                            <span
+                                id="graph-iter-label"
+                                style="color: var(--accent)"
+                                >0</span
+                            >
+                        </div>
+                        <div style="display:flex;gap:0.4rem;align-items:center;">
+                            <div
+                                id="graph-legend"
+                                style="font-size: 0.68rem; color: var(--text-muted)"
+                            >
+                                Click carousel to update
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadChartImage()" style="padding:0.25rem 0.6rem;font-size:0.65rem;gap:0.25rem;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                PNG
+                            </button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 340px">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- B&B Tree (compact) -->
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);">
+                        <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Branch &amp; Bound Tree</div>
+                        <button class="btn btn-secondary" onclick="downloadTreeImage()" style="padding:0.25rem 0.6rem;font-size:0.65rem;gap:0.25rem;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            PNG
+                        </button>
+                    </div>
+                    <div class="scrollbar-thin" style="overflow: auto">
+                        <svg id="treeCanvas" height="200">
+                            <text
+                                x="50%"
+                                y="50%"
+                                text-anchor="middle"
+                                fill="#8b93a8"
+                                font-size="12"
+                                font-family="JetBrains Mono, monospace"
+                            >
+                                Solve a problem to see the tree
+                            </text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ RIGHT: Iteration Panel ═══ -->
+            <div style="display: flex; flex-direction: column; gap: 0.9rem">
+                <!-- Carousel Controls -->
+                <div class="card">
+                    <div class="section-label">04 / Iterations</div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.6rem;
+                            margin-bottom: 0.85rem;
+                        "
+                    >
+                        <button
+                            class="btn btn-secondary"
+                            onclick="prevNode()"
+                            style="padding: 0.4rem 0.7rem"
+                        >
+                            ◀
+                        </button>
+                        <div
+                            style="
+                                flex: 1;
+                                text-align: center;
+                                font-size: 0.75rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Node
+                            <span
+                                id="cur-node-idx"
+                                style="color: var(--text); font-weight: 600"
+                                >—</span
+                            >
+                            <span style="color: var(--text-muted)"
+                                >/ <span id="total-nodes">—</span></span
+                            >
+                        </div>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="nextNode()"
+                            style="padding: 0.4rem 0.7rem"
+                        >
+                            ▶
+                        </button>
+                    </div>
+                    <div
+                        id="iter-dots"
+                        style="
+                            display: flex;
+                            gap: 0.35rem;
+                            justify-content: center;
+                            flex-wrap: wrap;
+                            margin-bottom: 0.85rem;
+                            min-height: 13px;
+                        "
+                    ></div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 0.7rem;
+                        "
+                    >
+                        <button
+                            class="btn btn-secondary"
+                            onclick="stepFirst()"
+                            style="padding: 0.3rem 0.55rem; font-size: 0.65rem"
+                        >
+                            ⏮
+                        </button>
+                        <button
+                            class="play-btn"
+                            id="play-btn"
+                            onclick="togglePlay()"
+                        >
+                            ▶
+                        </button>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="stepLast()"
+                            style="padding: 0.3rem 0.55rem; font-size: 0.65rem"
+                        >
+                            ⏭
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subproblem Detail -->
+                <div class="card" style="flex: 1">
+                    <div class="section-label">05 / Subproblem Detail</div>
+                    <div
+                        id="node-detail-content"
+                        style="
+                            color: var(--text-muted);
+                            font-family: &quot;JetBrains Mono&quot;, monospace;
+                            font-size: 0.72rem;
+                            text-align: center;
+                            padding: 2rem 0;
+                        "
+                    >
+                        Select an iteration
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end main grid -->
+
+        <!-- ═══ FLOWCHART SECTION ═══ -->
+        <div class="flowchart-section">
+            <div class="flowchart-card">
+                <div class="flowchart-header">
+                    <div>
+                        <div
+                            style="
+                                font-size: 1rem;
+                                font-weight: 700;
+                                color: var(--text);
+                                margin-bottom: 0.2rem;
+                            "
+                        >
+                            Branch &amp; Bound Decision Flowchart
+                        </div>
+                        <div
+                            style="font-size: 0.73rem; color: var(--text-muted)"
+                        >
+                            Visual representation of the decision process — root
+                            node, branching, bounds, pruning, and optimal
+                            solution path
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-success"
+                        id="download-btn"
+                        onclick="downloadFlowchart()"
+                    >
+                        <svg
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download Flowchart (PNG)
+                    </button>
+                </div>
+
+                <!-- Legend -->
+                <div
+                    style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 0.6rem;
+                        margin-bottom: 1rem;
+                    "
+                >
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.35rem;
+                            font-size: 0.7rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <div
+                            style="
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 2px;
+                                background: var(--accent);
+                            "
+                        ></div>
+                        Root / LP Solved
+                    </div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.35rem;
+                            font-size: 0.7rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <div
+                            style="
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 2px;
+                                background: #f59f00;
+                            "
+                        ></div>
+                        Branched
+                    </div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.35rem;
+                            font-size: 0.7rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <div
+                            style="
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 2px;
+                                background: var(--success);
+                            "
+                        ></div>
+                        Integer Solution
+                    </div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.35rem;
+                            font-size: 0.7rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <div
+                            style="
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 2px;
+                                background: var(--danger);
+                            "
+                        ></div>
+                        Pruned
+                    </div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.35rem;
+                            font-size: 0.7rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <div
+                            style="
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 2px;
+                                background: var(--purple);
+                            "
+                        ></div>
+                        Infeasible
+                    </div>
+                </div>
+
+                <div id="flowchartCanvas">
+                    <svg
+                        id="flowchartSVG"
+                        width="100%"
+                        height="420"
+                        style="display: block"
+                    >
+                        <text
+                            x="50%"
+                            y="210"
+                            text-anchor="middle"
+                            fill="#8b93a8"
+                            font-size="14"
+                            font-family="Arial, sans-serif"
+                        >
+                            Solve a problem to see the flowchart
+                        </text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ═══════════════════════════════════════════════
+            //  LP SOLVER  (Simplex method, 2-variable + slacks)
+            // ═══════════════════════════════════════════════
+
+            function solveLP(c, A, b) {
+                const n = A.length;
+                let bestZ = -Infinity;
+                let bestX = null;
+
+                const lines = [];
+                for (let i = 0; i < n; i++)
+                    lines.push({ a: A[i][0], b_: A[i][1], c_: b[i] });
+                lines.push({ a: 1, b_: 0, c_: 0 });
+                lines.push({ a: 0, b_: 1, c_: 0 });
+
+                const candidates = [];
+                for (let i = 0; i < lines.length; i++) {
+                    for (let j = i + 1; j < lines.length; j++) {
+                        const { x1, x2, ok } = intersect(lines[i], lines[j]);
+                        if (ok) candidates.push([x1, x2]);
+                    }
+                }
+
+                for (const [x1, x2] of candidates) {
+                    if (x1 < -1e-8 || x2 < -1e-8) continue;
+                    let feasible = true;
+                    for (let i = 0; i < n; i++) {
+                        if (A[i][0] * x1 + A[i][1] * x2 > b[i] + 1e-8) {
+                            feasible = false;
+                            break;
+                        }
+                    }
+                    if (feasible) {
+                        const z = c[0] * x1 + c[1] * x2;
+                        if (z > bestZ) {
+                            bestZ = z;
+                            bestX = [x1, x2];
+                        }
+                    }
+                }
+
+                if (bestX === null)
+                    return { feasible: false, x: null, z: -Infinity };
+                return { feasible: true, x: bestX, z: bestZ };
+            }
+
+            function intersect(l1, l2) {
+                const det = l1.a * l2.b_ - l2.a * l1.b_;
+                if (Math.abs(det) < 1e-10) return { ok: false };
+                const x1 = (l1.c_ * l2.b_ - l2.c_ * l1.b_) / det;
+                const x2 = (l1.a * l2.c_ - l2.a * l1.c_) / det;
+                return { x1, x2, ok: true };
+            }
+
+            // ═══════════════════════════════════════════════
+            //  BRANCH AND BOUND ENGINE
+            // ═══════════════════════════════════════════════
+
+            let allNodes = [];
+            let bestIntegerZ = -Infinity;
+            let bestIntegerSol = null;
+
+            function isInteger(v) {
+                return Math.abs(v - Math.round(v)) < 1e-6;
+            }
+
+            function branchAndBound(c, baseA, baseb) {
+                allNodes = [];
+                bestIntegerZ = -Infinity;
+                bestIntegerSol = null;
+                let nodeId = 0;
+
+                const queue = [
+                    {
+                        id: nodeId++,
+                        parentId: null,
+                        label: "Root",
+                        extraA: [],
+                        extrab: [],
+                        branchVar: null,
+                        branchDir: null,
+                        branchVal: null,
+                    },
+                ];
+
+                while (queue.length > 0) {
+                    const node = queue.shift();
+                    const A = [...baseA, ...node.extraA];
+                    const b_vec = [...baseb, ...node.extrab];
+                    const lp = solveLP(c, A, b_vec);
+                    node.lp = lp;
+
+                    if (!lp.feasible) {
+                        node.status = "infeasible";
+                        allNodes.push(node);
+                        continue;
+                    }
+                    if (lp.z <= bestIntegerZ + 1e-8) {
+                        node.status = "pruned";
+                        allNodes.push(node);
+                        continue;
+                    }
+
+                    const x1int = isInteger(lp.x[0]);
+                    const x2int = isInteger(lp.x[1]);
+
+                    if (x1int && x2int) {
+                        node.status = "integer";
+                        if (lp.z > bestIntegerZ) {
+                            bestIntegerZ = lp.z;
+                            bestIntegerSol = [...lp.x];
+                        }
+                        allNodes.push(node);
+                        continue;
+                    }
+
+                    node.status = "branched";
+                    allNodes.push(node);
+
+                    let branchIdx = !x1int ? 0 : 1;
+                    let branchVal = lp.x[branchIdx];
+                    let floor_ = Math.floor(branchVal);
+                    let ceil_ = Math.ceil(branchVal);
+
+                    queue.push({
+                        id: nodeId++,
+                        parentId: node.id,
+                        label: `x${branchIdx + 1} ≤ ${floor_}`,
+                        extraA: [
+                            ...node.extraA,
+                            branchIdx === 0 ? [1, 0] : [0, 1],
+                        ],
+                        extrab: [...node.extrab, floor_],
+                        branchVar: branchIdx + 1,
+                        branchDir: "≤",
+                        branchVal: floor_,
+                    });
+                    queue.push({
+                        id: nodeId++,
+                        parentId: node.id,
+                        label: `x${branchIdx + 1} ≥ ${ceil_}`,
+                        extraA: [
+                            ...node.extraA,
+                            branchIdx === 0 ? [-1, 0] : [0, -1],
+                        ],
+                        extrab: [...node.extrab, -ceil_],
+                        branchVar: branchIdx + 1,
+                        branchDir: "≥",
+                        branchVal: ceil_,
+                    });
+
+                    if (nodeId > 80) break;
+                }
+
+                return {
+                    nodes: allNodes,
+                    bestZ: bestIntegerZ,
+                    bestSol: bestIntegerSol,
+                };
+            }
+
+            // ═══════════════════════════════════════════════
+            //  PARSING
+            // ═══════════════════════════════════════════════
+
+            function parseObjective(str) {
+                str = str.replace(/\s+/g, "").replace(/\*/g, "");
+                let c1 = 0,
+                    c2 = 0;
+                const r1 = str.match(/([+-]?\d*\.?\d*)x1/);
+                const r2 = str.match(/([+-]?\d*\.?\d*)x2/);
+                if (r1) {
+                    const v = r1[1];
+                    c1 =
+                        v === "" || v === "+"
+                            ? 1
+                            : v === "-"
+                              ? -1
+                              : parseFloat(v);
+                }
+                if (r2) {
+                    const v = r2[1];
+                    c2 =
+                        v === "" || v === "+"
+                            ? 1
+                            : v === "-"
+                              ? -1
+                              : parseFloat(v);
+                }
+                return [c1, c2];
+            }
+
+            function parseConstraint(str) {
+                str = str.replace(/\s+/g, "").replace(/\*/g, "");
+                let lhs = "",
+                    rhs = "",
+                    op = "";
+                if (str.includes("<=") || str.includes("≤")) {
+                    const parts = str.split(/<=|≤/);
+                    lhs = parts[0];
+                    rhs = parts[1];
+                    op = "<=";
+                } else if (str.includes(">=") || str.includes("≥")) {
+                    const parts = str.split(/>=|≥/);
+                    lhs = parts[0];
+                    rhs = parts[1];
+                    op = ">=";
+                } else if (str.includes("=")) {
+                    const parts = str.split("=");
+                    lhs = parts[0];
+                    rhs = parts[1];
+                    op = "=";
+                } else return null;
+
+                let a1 = 0,
+                    a2 = 0;
+                const r1 = lhs.match(/([+-]?\d*\.?\d*)x1/);
+                const r2 = lhs.match(/([+-]?\d*\.?\d*)x2/);
+                if (r1) {
+                    const v = r1[1];
+                    a1 =
+                        v === "" || v === "+"
+                            ? 1
+                            : v === "-"
+                              ? -1
+                              : parseFloat(v);
+                }
+                if (r2) {
+                    const v = r2[1];
+                    a2 =
+                        v === "" || v === "+"
+                            ? 1
+                            : v === "-"
+                              ? -1
+                              : parseFloat(v);
+                }
+                const bval = parseFloat(rhs);
+
+                if (op === "<=") return { a: [a1, a2], b: bval };
+                if (op === ">=") return { a: [-a1, -a2], b: -bval };
+                if (op === "=")
+                    return [
+                        { a: [a1, a2], b: bval },
+                        { a: [-a1, -a2], b: -bval },
+                    ];
+                return null;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  CONSTRAINT INPUT UI
+            // ═══════════════════════════════════════════════
+
+            let constraintCount = 0;
+
+            function addConstraint(val = "") {
+                constraintCount++;
+                const id = "c" + constraintCount;
+                const row = document.createElement("div");
+                row.className = "constraint-row";
+                row.id = "row-" + id;
+                row.innerHTML = `<input type="text" id="${id}" value="${val}" placeholder="e.g. x1 + 2x2 <= 14" />`;
+                document.getElementById("constraints-list").appendChild(row);
+            }
+
+            function removeLastConstraint() {
+                const list = document.getElementById("constraints-list");
+                const rows = list.querySelectorAll(".constraint-row");
+                if (rows.length > 1) rows[rows.length - 1].remove();
+            }
+
+            function getConstraints() {
+                const list = document.getElementById("constraints-list");
+                const inputs = list.querySelectorAll("input");
+                const A = [],
+                    b = [];
+                inputs.forEach((inp) => {
+                    if (!inp.value.trim()) return;
+                    const r = parseConstraint(inp.value);
+                    if (!r) return;
+                    if (Array.isArray(r)) {
+                        r.forEach((rr) => {
+                            A.push(rr.a);
+                            b.push(rr.b);
+                        });
+                    } else {
+                        A.push(r.a);
+                        b.push(r.b);
+                    }
+                });
+                return { A, b };
+            }
+
+            // ═══════════════════════════════════════════════
+            //  CHART.JS GRAPH
+            // ═══════════════════════════════════════════════
+
+            let mainChart = null;
+            let currentProblem = { A: [], b: [] };
+
+            function getIntegerPoints(A, b, xMax, yMax) {
+                const pts = [];
+                for (let x1 = 0; x1 <= Math.ceil(xMax) + 1; x1++) {
+                    for (let x2 = 0; x2 <= Math.ceil(yMax) + 1; x2++) {
+                        let ok = true;
+                        for (let i = 0; i < A.length; i++) {
+                            if (A[i][0] * x1 + A[i][1] * x2 > b[i] + 1e-8) {
+                                ok = false;
+                                break;
+                            }
+                        }
+                        if (ok) pts.push({ x: x1, y: x2 });
+                    }
+                }
+                return pts;
+            }
+
+            function getFeasiblePolygon(A, b, xMax, yMax) {
+                const lines = [];
+                for (let i = 0; i < A.length; i++)
+                    lines.push({ a: A[i][0], b_: A[i][1], c_: b[i] });
+                lines.push({ a: 1, b_: 0, c_: 0 });
+                lines.push({ a: 0, b_: 1, c_: 0 });
+                lines.push({ a: 1, b_: 0, c_: xMax + 2 });
+                lines.push({ a: 0, b_: 1, c_: yMax + 2 });
+
+                const candidates = [];
+                for (let i = 0; i < lines.length; i++) {
+                    for (let j = i + 1; j < lines.length; j++) {
+                        const { x1, x2, ok } = intersect(lines[i], lines[j]);
+                        if (ok) candidates.push([x1, x2]);
+                    }
+                }
+
+                const pts = candidates.filter(([x1, x2]) => {
+                    if (x1 < -1e-6 || x2 < -1e-6) return false;
+                    for (let i = 0; i < A.length; i++) {
+                        if (A[i][0] * x1 + A[i][1] * x2 > b[i] + 1e-6)
+                            return false;
+                    }
+                    return true;
+                });
+
+                if (pts.length < 2)
+                    return pts.map((p) => ({ x: p[0], y: p[1] }));
+                const hull = convexHull(pts);
+                return hull.map((p) => ({ x: p[0], y: p[1] }));
+            }
+
+            function convexHull(pts) {
+                if (pts.length < 3) return pts;
+                const sorted = [...pts].sort(
+                    (a, b) => a[0] - b[0] || a[1] - b[1],
+                );
+                const cross = (O, A, B) =>
+                    (A[0] - O[0]) * (B[1] - O[1]) -
+                    (A[1] - O[1]) * (B[0] - O[0]);
+                const lower = [];
+                for (const p of sorted) {
+                    while (
+                        lower.length >= 2 &&
+                        cross(
+                            lower[lower.length - 2],
+                            lower[lower.length - 1],
+                            p,
+                        ) <= 0
+                    )
+                        lower.pop();
+                    lower.push(p);
+                }
+                const upper = [];
+                for (let i = sorted.length - 1; i >= 0; i--) {
+                    const p = sorted[i];
+                    while (
+                        upper.length >= 2 &&
+                        cross(
+                            upper[upper.length - 2],
+                            upper[upper.length - 1],
+                            p,
+                        ) <= 0
+                    )
+                        upper.pop();
+                    upper.push(p);
+                }
+                upper.pop();
+                lower.pop();
+                return lower.concat(upper);
+            }
+
+            function getAxisBounds(A, b) {
+                let xMax = 10,
+                    yMax = 10;
+                for (let i = 0; i < b.length; i++) {
+                    if (A[i][0] > 0)
+                        xMax = Math.max(xMax, (b[i] / A[i][0]) * 1.2);
+                    if (A[i][1] > 0)
+                        yMax = Math.max(yMax, (b[i] / A[i][1]) * 1.2);
+                }
+                return {
+                    xMax: Math.ceil(Math.min(xMax, 30)),
+                    yMax: Math.ceil(Math.min(yMax, 30)),
+                };
+            }
+
+            function drawGraph(nodeIdx) {
+                if (!allNodes.length) return;
+                const node = allNodes[nodeIdx];
+                if (!node) return;
+
+                const { A: baseA, b: baseb } = currentProblem;
+                const A = [...baseA, ...node.extraA];
+                const b_vec = [...baseb, ...node.extrab];
+                const { xMax, yMax } = getAxisBounds(A, b_vec);
+
+                const intPts = getIntegerPoints(baseA, baseb, xMax, yMax);
+                const polyPts = getFeasiblePolygon(A, b_vec, xMax, yMax);
+
+                const datasets = [];
+
+                if (polyPts.length > 0) {
+                    datasets.push({
+                        type: "scatter",
+                        label: "Feasible Region",
+                        data: polyPts,
+                        fill: true,
+                        backgroundColor: "rgba(59,91,219,0.07)",
+                        borderColor: "rgba(59,91,219,0.35)",
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        showLine: true,
+                        tension: 0,
+                    });
+                }
+
+                datasets.push({
+                    type: "scatter",
+                    label: "Integer Points",
+                    data: intPts,
+                    backgroundColor: "rgba(59,91,219,0.5)",
+                    borderColor: "rgba(59,91,219,0.8)",
+                    pointRadius: 5,
+                    pointStyle: "circle",
+                    showLine: false,
+                });
+
+                if (node.lp && node.lp.feasible) {
+                    datasets.push({
+                        type: "scatter",
+                        label: `LP Opt (${node.lp.x[0].toFixed(2)}, ${node.lp.x[1].toFixed(2)})`,
+                        data: [{ x: node.lp.x[0], y: node.lp.x[1] }],
+                        backgroundColor:
+                            node.status === "integer" ? "#2f9e44" : "#e67700",
+                        borderColor: "#fff",
+                        borderWidth: 2,
+                        pointRadius: 9,
+                        pointStyle: "rectRot",
+                        showLine: false,
+                    });
+                }
+
+                if (bestIntegerSol) {
+                    datasets.push({
+                        type: "scatter",
+                        label: `★ Best Int (${bestIntegerSol[0]}, ${bestIntegerSol[1]})`,
+                        data: [{ x: bestIntegerSol[0], y: bestIntegerSol[1] }],
+                        backgroundColor: "#f59f00",
+                        borderColor: "#fff",
+                        borderWidth: 2,
+                        pointRadius: 10,
+                        pointStyle: "star",
+                        showLine: false,
+                    });
+                }
+
+                const config = {
+                    type: "scatter",
+                    data: { datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 300 },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: "#5a6278",
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 11,
+                                    },
+                                    boxWidth: 12,
+                                },
+                            },
+                            tooltip: {
+                                backgroundColor: "#fff",
+                                borderColor: "#e2e6ed",
+                                borderWidth: 1,
+                                titleColor: "#3b5bdb",
+                                bodyColor: "#1a1d23",
+                                titleFont: {
+                                    family: "'JetBrains Mono', monospace",
+                                    size: 11,
+                                },
+                                bodyFont: {
+                                    family: "'JetBrains Mono', monospace",
+                                    size: 10,
+                                },
+                                callbacks: {
+                                    label: (ctx) =>
+                                        ` (${ctx.parsed.x}, ${ctx.parsed.y})`,
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                min: -0.3,
+                                max: xMax,
+                                grid: { color: "rgba(0,0,0,0.05)" },
+                                ticks: {
+                                    color: "#8b93a8",
+                                    font: {
+                                        family: "'JetBrains Mono', monospace",
+                                        size: 10,
+                                    },
+                                    stepSize: 1,
+                                },
+                                title: {
+                                    display: true,
+                                    text: "x₁",
+                                    color: "#5a6278",
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 11,
+                                    },
+                                },
+                            },
+                            y: {
+                                min: -0.3,
+                                max: yMax,
+                                grid: { color: "rgba(0,0,0,0.05)" },
+                                ticks: {
+                                    color: "#8b93a8",
+                                    font: {
+                                        family: "'JetBrains Mono', monospace",
+                                        size: 10,
+                                    },
+                                    stepSize: 1,
+                                },
+                                title: {
+                                    display: true,
+                                    text: "x₂",
+                                    color: "#5a6278",
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 11,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                };
+
+                if (mainChart) {
+                    mainChart.destroy();
+                    mainChart = null;
+                }
+                const ctx = document
+                    .getElementById("mainChart")
+                    .getContext("2d");
+                mainChart = new Chart(ctx, config);
+                document.getElementById("graph-iter-label").textContent =
+                    nodeIdx + 1;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  COMPACT TREE SVG
+            // ═══════════════════════════════════════════════
+
+            function renderTree() {
+                const svg = document.getElementById("treeCanvas");
+                if (!allNodes.length) return;
+
+                const nodeMap = {};
+                allNodes.forEach(
+                    (n) => (nodeMap[n.id] = { ...n, children: [] }),
+                );
+                allNodes.forEach((n) => {
+                    if (n.parentId !== null && nodeMap[n.parentId]) {
+                        nodeMap[n.parentId].children.push(n.id);
+                    }
+                });
+
+                const levels = {};
+                const queue2 = [0];
+                const visited = new Set();
+                while (queue2.length) {
+                    const id = queue2.shift();
+                    if (visited.has(id)) continue;
+                    visited.add(id);
+                    const node = nodeMap[id];
+                    if (!node) continue;
+                    const lvl =
+                        node.parentId === null
+                            ? 0
+                            : levels[node.parentId] !== undefined
+                              ? levels[node.parentId] + 1
+                              : 0;
+                    levels[id] = lvl;
+                    node.children.forEach((c) => queue2.push(c));
+                }
+
+                const maxLevel = Math.max(...Object.values(levels));
+                const levelGroups = {};
+                Object.entries(levels).forEach(([id, lvl]) => {
+                    if (!levelGroups[lvl]) levelGroups[lvl] = [];
+                    levelGroups[lvl].push(parseInt(id));
+                });
+
+                const NODE_W = 96,
+                    NODE_H = 46,
+                    HGAP = 16,
+                    VGAP = 52;
+                const positions = {};
+
+                Object.entries(levelGroups).forEach(([lvl, ids]) => {
+                    ids.forEach((id, i) => {
+                        positions[id] = {
+                            x: i * (NODE_W + HGAP) + NODE_W / 2,
+                            y: parseInt(lvl) * (NODE_H + VGAP) + NODE_H / 2,
+                            ox: i * (NODE_W + HGAP),
+                            oy: parseInt(lvl) * (NODE_H + VGAP),
+                        };
+                    });
+                });
+
+                const svgWidth =
+                    Math.max(
+                        ...Object.values(levelGroups).map(
+                            (ids) => ids.length * (NODE_W + HGAP),
+                        ),
+                    ) + 40;
+                Object.entries(levelGroups).forEach(([lvl, ids]) => {
+                    const totalW = ids.length * (NODE_W + HGAP) - HGAP;
+                    const offset = (svgWidth - totalW) / 2;
+                    ids.forEach((id) => {
+                        positions[id].x += offset;
+                        positions[id].ox += offset;
+                    });
+                });
+
+                const svgH = (maxLevel + 1) * (NODE_H + VGAP) + 20;
+                svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgH}`);
+                svg.setAttribute("height", Math.min(svgH, 280));
+                svg.setAttribute("width", "100%");
+
+                const statusColor = {
+                    integer: "#2f9e44",
+                    pruned: "#c92a2a",
+                    infeasible: "#7048e8",
+                    branched: "#e67700",
+                    active: "#3b5bdb",
+                };
+                const statusFill = {
+                    integer: "#ebfbee",
+                    pruned: "#fff5f5",
+                    infeasible: "#f3f0ff",
+                    branched: "#fff9db",
+                    active: "#eef2ff",
+                };
+
+                let html = "";
+
+                allNodes.forEach((node) => {
+                    if (node.parentId === null) return;
+                    const p = positions[node.parentId];
+                    const c = positions[node.id];
+                    if (!p || !c) return;
+                    html += `<line x1="${p.x}" y1="${p.oy + NODE_H}" x2="${c.x}" y2="${c.oy}"
+      stroke="#c8cdd8" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+                    const midX = (p.x + c.x) / 2;
+                    const midY = (p.oy + NODE_H + c.oy) / 2;
+                    const label = node.branchVar
+                        ? `x${node.branchVar}${node.branchDir}${node.branchVal}`
+                        : "";
+                    if (label) {
+                        html += `<rect x="${midX - 20}" y="${midY - 8}" width="40" height="14" rx="3" fill="white" stroke="#e2e6ed" stroke-width="1"/>`;
+                        html += `<text x="${midX}" y="${midY + 2}" text-anchor="middle" font-size="7.5" fill="#5a6278" font-family="JetBrains Mono, monospace">${label}</text>`;
+                    }
+                });
+
+                allNodes.forEach((node) => {
+                    const pos = positions[node.id];
+                    if (!pos) return;
+                    const color = statusColor[node.status] || "#3b5bdb";
+                    const fill = statusFill[node.status] || "#eef2ff";
+                    const x = pos.ox,
+                        y = pos.oy;
+
+                    html += `<g onclick="goToNode(${node.id})" style="cursor:pointer;">`;
+                    html += `<rect x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="5"
+      fill="${fill}" stroke="${color}" stroke-width="1.5"/>`;
+                    html += `<text x="${x + NODE_W / 2}" y="${y + 13}" text-anchor="middle"
+      font-size="8.5" fill="${color}" font-weight="700" font-family="JetBrains Mono, monospace">
+      S${node.id + 1}${node.branchVar ? ": x" + node.branchVar + node.branchDir + node.branchVal : ": ROOT"}
+    </text>`;
+                    const lpStr = node.lp?.feasible
+                        ? `(${node.lp.x[0].toFixed(1)},${node.lp.x[1].toFixed(1)}) Z=${node.lp.z.toFixed(1)}`
+                        : node.status === "infeasible"
+                          ? "INFEASIBLE"
+                          : "—";
+                    html += `<text x="${x + NODE_W / 2}" y="${y + 25}" text-anchor="middle"
+      font-size="7.5" fill="#5a6278" font-family="JetBrains Mono, monospace">${lpStr}</text>`;
+                    html += `<text x="${x + NODE_W / 2}" y="${y + 38}" text-anchor="middle"
+      font-size="7.5" fill="${color}" font-weight="600" font-family="JetBrains Mono, monospace" letter-spacing="0.05em">
+      ${node.status?.toUpperCase()}
+    </text>`;
+                    html += `</g>`;
+                });
+
+                svg.innerHTML = html;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  FLOWCHART VISUALIZATION
+            // ═══════════════════════════════════════════════
+
+            function renderFlowchart() {
+                if (!allNodes.length) return;
+
+                const nodeMap = {};
+                allNodes.forEach(
+                    (n) => (nodeMap[n.id] = { ...n, children: [] }),
+                );
+                allNodes.forEach((n) => {
+                    if (n.parentId !== null && nodeMap[n.parentId]) {
+                        nodeMap[n.parentId].children.push(n.id);
+                    }
+                });
+
+                // Compute BFS levels
+                const levels = {};
+                const bfsQueue = [0];
+                const visited = new Set();
+                while (bfsQueue.length) {
+                    const id = bfsQueue.shift();
+                    if (visited.has(id)) continue;
+                    visited.add(id);
+                    const node = nodeMap[id];
+                    if (!node) continue;
+                    levels[id] =
+                        node.parentId === null
+                            ? 0
+                            : levels[node.parentId] !== undefined
+                              ? levels[node.parentId] + 1
+                              : 0;
+                    node.children.forEach((c) => bfsQueue.push(c));
+                }
+
+                const levelGroups = {};
+                Object.entries(levels).forEach(([id, lvl]) => {
+                    if (!levelGroups[lvl]) levelGroups[lvl] = [];
+                    levelGroups[lvl].push(parseInt(id));
+                });
+
+                const maxLevel = Math.max(...Object.values(levels));
+                const NODE_W = 160,
+                    NODE_H = 70;
+                const HGAP = 30,
+                    VGAP = 80;
+                const PAD = 30;
+
+                const positions = {};
+                let svgWidth = 0;
+
+                Object.entries(levelGroups).forEach(([lvl, ids]) => {
+                    const totalW =
+                        ids.length * NODE_W + (ids.length - 1) * HGAP;
+                    svgWidth = Math.max(svgWidth, totalW + PAD * 2);
+                    ids.forEach((id, i) => {
+                        positions[id] = {
+                            x: i * (NODE_W + HGAP) + NODE_W / 2,
+                            y:
+                                parseInt(lvl) * (NODE_H + VGAP) +
+                                NODE_H / 2 +
+                                PAD,
+                            ox: i * (NODE_W + HGAP),
+                            oy: parseInt(lvl) * (NODE_H + VGAP) + PAD,
+                        };
+                    });
+                });
+
+                // Center each level
+                Object.entries(levelGroups).forEach(([lvl, ids]) => {
+                    const totalW = ids.length * (NODE_W + HGAP) - HGAP;
+                    const offset = (svgWidth - totalW) / 2;
+                    ids.forEach((id) => {
+                        positions[id].x += offset;
+                        positions[id].ox += offset;
+                    });
+                });
+
+                const svgH = (maxLevel + 1) * (NODE_H + VGAP) + PAD * 2;
+                // Use container width so flowchart fills the card; content is centered inside
+                const containerW =
+                    document.getElementById("flowchartCanvas").clientWidth ||
+                    900;
+                const finalW = Math.max(svgWidth, containerW);
+
+                const statusColor = {
+                    integer: "#2f9e44",
+                    pruned: "#c92a2a",
+                    infeasible: "#7048e8",
+                    branched: "#e67700",
+                    active: "#3b5bdb",
+                };
+                const statusFill = {
+                    integer: "#ebfbee",
+                    pruned: "#fff5f5",
+                    infeasible: "#f3f0ff",
+                    branched: "#fff9db",
+                    active: "#eef2ff",
+                };
+                const statusBorder = {
+                    integer: "#8ce99a",
+                    pruned: "#ffa8a8",
+                    infeasible: "#b197fc",
+                    branched: "#fcd672",
+                    active: "#bac8ff",
+                };
+
+                // Find optimal path
+                const optimalPath = new Set();
+                if (bestIntegerSol) {
+                    const intNodes = allNodes.filter(
+                        (n) => n.status === "integer",
+                    );
+                    if (intNodes.length) {
+                        const best = intNodes.reduce((a, b) =>
+                            a.lp.z > b.lp.z ? a : b,
+                        );
+                        let cur = best;
+                        while (cur) {
+                            optimalPath.add(cur.id);
+                            cur =
+                                cur.parentId !== null
+                                    ? nodeMap[cur.parentId]
+                                    : null;
+                        }
+                    }
+                }
+
+                let html = `<defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#c8cdd8"/>
+    </marker>
+    <marker id="arrow-opt" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2f9e44"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.08)"/>
+    </filter>
+  </defs>`;
+
+                // Clean white background, no grid
+                html += `<rect width="${finalW}" height="${svgH}" fill="white"/>`;
+
+                // Edges
+                allNodes.forEach((node) => {
+                    if (node.parentId === null) return;
+                    const p = positions[node.parentId];
+                    const c = positions[node.id];
+                    if (!p || !c) return;
+
+                    const isOptPath =
+                        optimalPath.has(node.id) &&
+                        optimalPath.has(node.parentId);
+                    const stroke = isOptPath ? "#2f9e44" : "#c8cdd8";
+                    const sw = isOptPath ? 2.5 : 1.5;
+                    const marker = isOptPath
+                        ? "url(#arrow-opt)"
+                        : "url(#arrow)";
+                    const dash = isOptPath ? "" : 'stroke-dasharray="5,4"';
+
+                    const x1 = p.x;
+                    const y1 = p.oy + NODE_H;
+                    const x2 = c.x;
+                    const y2 = c.oy;
+                    const cx1 = x1;
+                    const cy1 = y1 + (y2 - y1) * 0.45;
+                    const cx2 = x2;
+                    const cy2 = y1 + (y2 - y1) * 0.55;
+
+                    html += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}"
+      stroke="${stroke}" stroke-width="${sw}" fill="none" ${dash} marker-end="${marker}"/>`;
+
+                    // Edge label
+                    const label = node.branchVar
+                        ? `x${node.branchVar} ${node.branchDir} ${node.branchVal}`
+                        : "";
+                    if (label) {
+                        const midX = (x1 + x2) / 2;
+                        const midY = (y1 + y2) / 2;
+                        const lw = label.length * 6.5 + 14;
+                        html += `<rect x="${midX - lw / 2}" y="${midY - 10}" width="${lw}" height="18" rx="4"
+        fill="white" stroke="${isOptPath ? "#8ce99a" : "#e2e6ed"}" stroke-width="1" filter="url(#shadow)"/>`;
+                        html += `<text x="${midX}" y="${midY + 3}" text-anchor="middle"
+        font-size="10" fill="${isOptPath ? "#2f9e44" : "#5a6278"}" font-family="JetBrains Mono, monospace" font-weight="${isOptPath ? "600" : "400"}">${label}</text>`;
+                    }
+                });
+
+                // Nodes
+                allNodes.forEach((node) => {
+                    const pos = positions[node.id];
+                    if (!pos) return;
+                    const color = statusColor[node.status] || "#3b5bdb";
+                    const fill = statusFill[node.status] || "#eef2ff";
+                    const border = statusBorder[node.status] || "#bac8ff";
+                    const x = pos.ox,
+                        y = pos.oy;
+                    const isOpt = optimalPath.has(node.id);
+                    const sw = isOpt ? 2.5 : 1.5;
+                    const glow = isOpt ? 'filter="url(#shadow)"' : "";
+
+                    html += `<g onclick="goToNode(${node.id})" style="cursor:pointer;" ${glow}>`;
+                    // Node box
+                    html += `<rect x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="7"
+      fill="${fill}" stroke="${isOpt ? color : border}" stroke-width="${sw}"/>`;
+
+                    // Status strip at top
+                    html += `<rect x="${x}" y="${y}" width="${NODE_W}" height="18" rx="7" fill="${color}" opacity="0.15"/>`;
+                    html += `<rect x="${x}" y="${y + 11}" width="${NODE_W}" height="7" fill="${fill}"/>`;
+
+                    // Node ID + branch
+                    const idLabel = `S${node.id + 1}${node.branchVar ? ": x" + node.branchVar + " " + node.branchDir + " " + node.branchVal : ": ROOT"}`;
+                    html += `<text x="${x + NODE_W / 2}" y="${y + 13}" text-anchor="middle"
+      font-size="9" fill="${color}" font-weight="700" font-family="JetBrains Mono, monospace">${idLabel}</text>`;
+
+                    // LP value
+                    const lpStr = node.lp?.feasible
+                        ? `Z=${node.lp.z.toFixed(2)}  (${node.lp.x[0].toFixed(2)}, ${node.lp.x[1].toFixed(2)})`
+                        : node.status === "infeasible"
+                          ? "INFEASIBLE"
+                          : "Not Solved";
+                    html += `<text x="${x + NODE_W / 2}" y="${y + 31}" text-anchor="middle"
+      font-size="8.5" fill="#1a1d23" font-family="JetBrains Mono, monospace">${lpStr}</text>`;
+
+                    // Bound info
+                    let boundInfo = "";
+                    if (node.status === "pruned" && bestIntegerZ > -Infinity) {
+                        boundInfo = `Pruned: Z ≤ ${bestIntegerZ.toFixed(1)}`;
+                    } else if (node.status === "integer") {
+                        boundInfo = `★ Integer solution`;
+                    } else if (node.status === "infeasible") {
+                        boundInfo = `No feasible solution`;
+                    } else if (
+                        node.status === "branched" &&
+                        node.lp?.feasible
+                    ) {
+                        const fracVar = !isInteger(node.lp.x[0]) ? "x₁" : "x₂";
+                        boundInfo = `Branch on ${fracVar} (fractional)`;
+                    }
+                    if (boundInfo) {
+                        html += `<text x="${x + NODE_W / 2}" y="${y + 44}" text-anchor="middle"
+        font-size="8" fill="${color}" font-family="Inter, sans-serif" font-style="italic">${boundInfo}</text>`;
+                    }
+
+                    // Status badge
+                    html += `<rect x="${x + NODE_W / 2 - 28}" y="${y + NODE_H - 16}" width="56" height="12" rx="3"
+      fill="${color}" opacity="0.12"/>`;
+                    html += `<text x="${x + NODE_W / 2}" y="${y + NODE_H - 7}" text-anchor="middle"
+      font-size="7.5" fill="${color}" font-weight="700" font-family="JetBrains Mono, monospace" letter-spacing="0.06em">
+      ${node.status?.toUpperCase()}
+    </text>`;
+                    html += `</g>`;
+                });
+
+                const svgEl = document.getElementById("flowchartSVG");
+                svgEl.setAttribute("width", finalW);
+                svgEl.setAttribute("height", svgH);
+                svgEl.setAttribute("viewBox", `0 0 ${finalW} ${svgH}`);
+                svgEl.style.width = "100%";
+                svgEl.style.height = svgH + "px";
+                svgEl.innerHTML = html;
+
+                // Adjust container
+                document.getElementById("flowchartCanvas").style.minHeight =
+                    Math.min(svgH, 600) + "px";
+            }
+
+            // ═══════════════════════════════════════════════
+            //  DOWNLOAD FLOWCHART
+            // ═══════════════════════════════════════════════
+
+            function downloadFlowchart() {
+                if (!allNodes.length) {
+                    alert(
+                        "Please solve a problem first to generate the flowchart.",
+                    );
+                    return;
+                }
+
+                const svgEl = document.getElementById("flowchartSVG");
+                const svgW = parseInt(svgEl.getAttribute("width")) || 900;
+                const svgH = parseInt(svgEl.getAttribute("height")) || 500;
+                const scale = 2;
+
+                // Clone and swap web fonts to system fonts (canvas can't load external fonts from SVG blobs)
+                const clone = svgEl.cloneNode(true);
+                clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                clone.setAttribute("width", svgW);
+                clone.setAttribute("height", svgH);
+                clone.querySelectorAll("text").forEach((t) => {
+                    const ff = t.getAttribute("font-family") || "";
+                    if (
+                        ff.toLowerCase().includes("mono") ||
+                        ff.toLowerCase().includes("jetbrains") ||
+                        ff.toLowerCase().includes("courier")
+                    ) {
+                        t.setAttribute(
+                            "font-family",
+                            '"Courier New", Courier, monospace',
+                        );
+                    } else {
+                        t.setAttribute(
+                            "font-family",
+                            "Arial, Helvetica, sans-serif",
+                        );
+                    }
+                });
+
+                const svgStr = new XMLSerializer().serializeToString(clone);
+                const svgBlob = new Blob([svgStr], {
+                    type: "image/svg+xml;charset=utf-8",
+                });
+                const url = URL.createObjectURL(svgBlob);
+
+                const canvas = document.createElement("canvas");
+                canvas.width = svgW * scale;
+                canvas.height = svgH * scale;
+                const ctx = canvas.getContext("2d");
+                ctx.scale(scale, scale);
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, svgW, svgH);
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, svgW, svgH);
+                    URL.revokeObjectURL(url);
+                    const a = document.createElement("a");
+                    a.download = "branch_and_bound_flowchart.png";
+                    a.href = canvas.toDataURL("image/png");
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    alert(
+                        "Export failed — try right-clicking the flowchart and saving as image.",
+                    );
+                };
+                img.src = url;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  DOWNLOAD TREE IMAGE
+            // ═══════════════════════════════════════════════
+
+            function downloadTreeImage() {
+                if (!allNodes.length) {
+                    alert("Please solve a problem first to generate the tree.");
+                    return;
+                }
+
+                const svgEl = document.getElementById("treeCanvas");
+                const vb = svgEl.getAttribute("viewBox");
+                const parts = vb ? vb.split(/\s+/) : [0, 0, 900, 200];
+                const svgW = parseInt(parts[2]) || 900;
+                const svgH = parseInt(parts[3]) || 200;
+                const scale = 2;
+
+                const clone = svgEl.cloneNode(true);
+                clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                clone.setAttribute("width", svgW);
+                clone.setAttribute("height", svgH);
+                clone.querySelectorAll("text").forEach((t) => {
+                    const ff = t.getAttribute("font-family") || "";
+                    if (
+                        ff.toLowerCase().includes("mono") ||
+                        ff.toLowerCase().includes("jetbrains") ||
+                        ff.toLowerCase().includes("courier")
+                    ) {
+                        t.setAttribute("font-family", '"Courier New", Courier, monospace');
+                    } else {
+                        t.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+                    }
+                });
+
+                const svgStr = new XMLSerializer().serializeToString(clone);
+                const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                const canvas = document.createElement("canvas");
+                canvas.width = svgW * scale;
+                canvas.height = svgH * scale;
+                const ctx = canvas.getContext("2d");
+                ctx.scale(scale, scale);
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, svgW, svgH);
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, svgW, svgH);
+                    URL.revokeObjectURL(url);
+                    const a = document.createElement("a");
+                    a.download = "branch_and_bound_tree.png";
+                    a.href = canvas.toDataURL("image/png");
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    alert("Export failed — try right-clicking the tree and saving as image.");
+                };
+                img.src = url;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  DOWNLOAD CHART IMAGE
+            // ═══════════════════════════════════════════════
+
+            function downloadChartImage() {
+                if (!allNodes.length) {
+                    alert("Please solve a problem first to generate the chart.");
+                    return;
+                }
+                const canvas = document.getElementById("mainChart");
+                const a = document.createElement("a");
+                a.download = "branch_and_bound_chart.png";
+                a.href = canvas.toDataURL("image/png");
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            // ═══════════════════════════════════════════════
+            //  NODE DETAIL CARD
+            // ═══════════════════════════════════════════════
+
+            function renderNodeDetail(idx) {
+                const node = allNodes[idx];
+                if (!node) return;
+
+                const badgeClass =
+                    {
+                        integer: "badge-integer",
+                        pruned: "badge-pruned",
+                        infeasible: "badge-infeasible",
+                        branched: "badge-branched",
+                    }[node.status] || "badge-active";
+                const restriction = node.branchVar
+                    ? `x${node.branchVar} ${node.branchDir} ${node.branchVal}`
+                    : "None (Root)";
+                const lpSol = node.lp?.feasible
+                    ? `x₁ = ${node.lp.x[0].toFixed(4)}, x₂ = ${node.lp.x[1].toFixed(4)}`
+                    : "—";
+                const lpZ = node.lp?.feasible ? node.lp.z.toFixed(4) : "—";
+                const isFrac = node.lp?.feasible
+                    ? !isInteger(node.lp.x[0]) || !isInteger(node.lp.x[1])
+                    : false;
+                const solType = !node.lp?.feasible
+                    ? "N/A"
+                    : node.status === "integer"
+                      ? "Integer ✓"
+                      : isFrac
+                        ? "Fractional"
+                        : "Integer";
+
+                let pruneReason = "—";
+                if (node.status === "infeasible")
+                    pruneReason = "No feasible solution";
+                else if (node.status === "pruned")
+                    pruneReason = `Z ≤ best known (${bestIntegerZ.toFixed(2)})`;
+                else if (node.status === "integer")
+                    pruneReason = "Optimal integer found";
+                else if (node.status === "branched")
+                    pruneReason = `Branch on x${isFrac && !isInteger(node.lp?.x[0]) ? 1 : 2}`;
+
+                const constraintsFromNode = node.extraA.map((a, i) => {
+                    const b = node.extrab[i];
+                    if (a[0] === 1 && a[1] === 0) return `x₁ ≤ ${b}`;
+                    if (a[0] === -1 && a[1] === 0) return `x₁ ≥ ${-b}`;
+                    if (a[0] === 0 && a[1] === 1) return `x₂ ≤ ${b}`;
+                    if (a[0] === 0 && a[1] === -1) return `x₂ ≥ ${-b}`;
+                    return `${a[0]}x₁ + ${a[1]}x₂ ≤ ${b}`;
+                });
+
+                document.getElementById("node-detail-content").innerHTML = `
+    <div class="node-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text);font-weight:700;">Subproblem S${node.id + 1}</span>
+        <span class="badge ${badgeClass}">${node.status}</span>
+      </div>
+
+      <div style="background:var(--bg-muted);border:1px solid var(--border);border-radius:5px;padding:0.8rem;margin-bottom:0.85rem;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-muted);letter-spacing:0.1em;margin-bottom:0.4rem;font-weight:600;">LP RELAXATION</div>
+        <div class="z-value">${lpZ === "—" ? "—" : "Z = " + parseFloat(lpZ).toFixed(2)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-secondary);margin-top:0.25rem;">${lpSol}</div>
+      </div>
+
+      <div class="info-row"><span class="info-key">Branch Restriction</span><span class="info-val">${restriction}</span></div>
+      <div class="info-row"><span class="info-key">Parent Node</span><span class="info-val">${node.parentId !== null ? "S" + (node.parentId + 1) : "Root"}</span></div>
+      <div class="info-row"><span class="info-key">Active Bounds</span><span class="info-val" style="font-size:0.68rem;">${constraintsFromNode.length ? constraintsFromNode.join(", ") : "None"}</span></div>
+      <div class="info-row"><span class="info-key">Solution Type</span><span class="info-val">${solType}</span></div>
+      <div class="info-row"><span class="info-key">Node Action</span><span class="info-val">${pruneReason}</span></div>
+
+      ${node.status === "integer" ? `<div class="best-badge">★ INTEGER SOLUTION FOUND</div>` : ""}
+    </div>
+  `;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  NODE LOG
+            // ═══════════════════════════════════════════════
+
+            function renderNodeLog() {
+                const log = document.getElementById("node-log");
+                if (!allNodes.length) {
+                    log.innerHTML =
+                        "<div style=\"color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:0.7rem;text-align:center;padding:1rem;\">No nodes yet</div>";
+                    return;
+                }
+
+                const colorMap = {
+                    integer: "var(--success)",
+                    pruned: "var(--danger)",
+                    infeasible: "var(--purple)",
+                    branched: "var(--warning)",
+                };
+                const badgeMap = {
+                    integer: "badge-integer",
+                    pruned: "badge-pruned",
+                    infeasible: "badge-infeasible",
+                    branched: "badge-branched",
+                };
+
+                log.innerHTML = allNodes
+                    .map((node) => {
+                        const color = colorMap[node.status] || "var(--accent)";
+                        const badge = badgeMap[node.status] || "badge-active";
+                        const lpZ = node.lp?.feasible
+                            ? node.lp.z.toFixed(1)
+                            : "N/A";
+                        return `
+      <div class="node-log-item" onclick="goToNode(${node.id})" style="border-left-color:${color};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:${color};font-weight:700;">S${node.id + 1}</span>
+          <span class="badge ${badge}">${node.status}</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);">
+          ${node.branchVar ? `x${node.branchVar}${node.branchDir}${node.branchVal}` : "Root"} · Z=${lpZ}
+        </div>
+      </div>
+    `;
+                    })
+                    .join("");
+            }
+
+            // ═══════════════════════════════════════════════
+            //  RESULTS PANEL
+            // ═══════════════════════════════════════════════
+
+            function renderResults() {
+                const panel = document.getElementById("results-content");
+                if (!bestIntegerSol) {
+                    panel.innerHTML =
+                        "<div style=\"color:var(--danger);font-family:'JetBrains Mono',monospace;font-size:0.73rem;text-align:center;padding:1rem;\">No integer solution found</div>";
+                    return;
+                }
+                panel.innerHTML = `
+    <div style="text-align:center;padding:0.5rem 0 0.75rem;">
+      <div style="font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.3rem;">Optimal Integer Solution</div>
+      <div class="z-value" style="font-size:1.9rem;">Z* = ${bestIntegerZ.toFixed(2)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
+        x₁* = ${bestIntegerSol[0].toFixed(0)},  x₂* = ${bestIntegerSol[1].toFixed(0)}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+      <div class="stat-chip">
+        <div class="stat-chip-label">Total Nodes</div>
+        <div class="stat-chip-value">${allNodes.length}</div>
+      </div>
+      <div class="stat-chip" style="border-color:var(--success);background:var(--success-bg);">
+        <div class="stat-chip-label" style="color:var(--success);">Integer</div>
+        <div class="stat-chip-value" style="color:var(--success);">${allNodes.filter((n) => n.status === "integer").length}</div>
+      </div>
+    </div>
+  `;
+                document.getElementById("hdr-nodes").textContent =
+                    `Nodes: ${allNodes.length}`;
+                document.getElementById("hdr-best").textContent =
+                    `Best Z: ${bestIntegerZ.toFixed(2)}`;
+            }
+
+            // ═══════════════════════════════════════════════
+            //  CAROUSEL STATE
+            // ═══════════════════════════════════════════════
+
+            let currentNodeIdx = 0;
+            let playInterval = null;
+
+            function renderDots() {
+                const container = document.getElementById("iter-dots");
+                const max = Math.min(allNodes.length, 20);
+                container.innerHTML = Array.from(
+                    { length: max },
+                    (_, i) =>
+                        `<div class="iter-dot ${i === currentNodeIdx ? "active" : ""}" onclick="goToNode(${i})"></div>`,
+                ).join("");
+                document.getElementById("cur-node-idx").textContent =
+                    currentNodeIdx + 1;
+                document.getElementById("total-nodes").textContent =
+                    allNodes.length;
+            }
+
+            function goToNode(id) {
+                const idx = allNodes.findIndex((n) => n.id === id);
+                if (idx === -1) return;
+                currentNodeIdx = idx;
+                renderDots();
+                renderNodeDetail(currentNodeIdx);
+                drawGraph(currentNodeIdx);
+            }
+
+            function prevNode() {
+                if (currentNodeIdx > 0) {
+                    currentNodeIdx--;
+                    renderDots();
+                    renderNodeDetail(currentNodeIdx);
+                    drawGraph(currentNodeIdx);
+                }
+            }
+            function nextNode() {
+                if (currentNodeIdx < allNodes.length - 1) {
+                    currentNodeIdx++;
+                    renderDots();
+                    renderNodeDetail(currentNodeIdx);
+                    drawGraph(currentNodeIdx);
+                }
+            }
+            function stepFirst() {
+                currentNodeIdx = 0;
+                renderDots();
+                renderNodeDetail(0);
+                drawGraph(0);
+            }
+            function stepLast() {
+                currentNodeIdx = allNodes.length - 1;
+                renderDots();
+                renderNodeDetail(currentNodeIdx);
+                drawGraph(currentNodeIdx);
+            }
+
+            function togglePlay() {
+                const btn = document.getElementById("play-btn");
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                    btn.textContent = "▶";
+                } else {
+                    btn.textContent = "⏸";
+                    playInterval = setInterval(() => {
+                        if (currentNodeIdx < allNodes.length - 1) {
+                            nextNode();
+                        } else {
+                            clearInterval(playInterval);
+                            playInterval = null;
+                            btn.textContent = "▶";
+                        }
+                    }, 1200);
+                }
+            }
+
+            // ═══════════════════════════════════════════════
+            //  MAIN SOLVE
+            // ═══════════════════════════════════════════════
+
+            function solve() {
+                const objStr = document.getElementById("inp-obj").value;
+                const c = parseObjective(objStr);
+                const { A, b } = getConstraints();
+
+                if (!A.length) {
+                    alert("Please add at least one constraint.");
+                    return;
+                }
+                if (isNaN(c[0]) || isNaN(c[1])) {
+                    alert("Could not parse objective function.");
+                    return;
+                }
+
+                currentProblem = { A, b };
+                const result = branchAndBound(c, A, b);
+                allNodes = result.nodes;
+                bestIntegerZ = result.bestZ;
+                bestIntegerSol = result.bestSol;
+                currentNodeIdx = 0;
+
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                    document.getElementById("play-btn").textContent = "▶";
+                }
+
+                renderResults();
+                renderNodeLog();
+                renderDots();
+                renderNodeDetail(0);
+                renderTree();
+                drawGraph(0);
+                renderFlowchart();
+            }
+
+            function loadExample() {
+                document.getElementById("inp-obj").value = "8x1 + 5x2";
+                const list = document.getElementById("constraints-list");
+                list.querySelectorAll(".constraint-row").forEach((r) =>
+                    r.remove(),
+                );
+                addConstraint("x1 + x2 <= 6");
+                addConstraint("9x1 + 5x2 <= 45");
+                solve();
+            }
+
+            // ═══════════════════════════════════════════════
+            //  SAVE / LOAD PROBLEMS  (localStorage)
+            // ═══════════════════════════════════════════════
+
+            const LS_KEY = "bb_saved_problems";
+
+            function getSavedProblems() {
+                try {
+                    return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+                } catch {
+                    return [];
+                }
+            }
+
+            function saveProblem() {
+                const name = document.getElementById("save-name").value.trim();
+                if (!name) {
+                    alert("Please enter a name for this problem.");
+                    return;
+                }
+
+                const objStr = document.getElementById("inp-obj").value.trim();
+                const list = document.getElementById("constraints-list");
+                const constraints = Array.from(list.querySelectorAll("input"))
+                    .map((i) => i.value.trim())
+                    .filter(Boolean);
+
+                if (!constraints.length) {
+                    alert("Add at least one constraint before saving.");
+                    return;
+                }
+
+                const problems = getSavedProblems();
+                const existing = problems.findIndex((p) => p.name === name);
+                const entry = {
+                    name,
+                    objective: objStr,
+                    constraints,
+                    savedAt: Date.now(),
+                };
+
+                if (existing >= 0) {
+                    if (!confirm(`Overwrite saved problem "${name}"?`)) return;
+                    problems[existing] = entry;
+                } else {
+                    problems.push(entry);
+                }
+
+                localStorage.setItem(LS_KEY, JSON.stringify(problems));
+                document.getElementById("save-name").value = "";
+                renderSavedList();
+                showToast(`Saved "${name}"`);
+            }
+
+            function loadProblem(name) {
+                const problems = getSavedProblems();
+                const entry = problems.find((p) => p.name === name);
+                if (!entry) return;
+
+                document.getElementById("inp-obj").value = entry.objective;
+                const list = document.getElementById("constraints-list");
+                list.querySelectorAll(".constraint-row").forEach((r) =>
+                    r.remove(),
+                );
+                entry.constraints.forEach((c) => addConstraint(c));
+                showToast(`Loaded "${name}"`);
+            }
+
+            function deleteProblem(name) {
+                if (!confirm(`Delete saved problem "${name}"?`)) return;
+                const problems = getSavedProblems().filter(
+                    (p) => p.name !== name,
+                );
+                localStorage.setItem(LS_KEY, JSON.stringify(problems));
+                renderSavedList();
+            }
+
+            function renderSavedList() {
+                const problems = getSavedProblems();
+                const container = document.getElementById("saved-list");
+                if (!problems.length) {
+                    container.innerHTML =
+                        '<div style="color:var(--text-muted);font-size:0.72rem;text-align:center;padding:0.75rem 0;">No saved problems</div>';
+                    return;
+                }
+                container.innerHTML = problems
+                    .map((p) => {
+                        const date = new Date(p.savedAt).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric" },
+                        );
+                        return `
+      <div style="display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.55rem;background:var(--bg-muted);border:1px solid var(--border);border-radius:5px;">
+        <div style="flex:1;min-width:0;cursor:pointer;" onclick="loadProblem('${p.name.replace(/'/g, "\\'")}')">
+          <div style="font-size:0.75rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+          <div style="font-size:0.65rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${p.objective} · ${date}</div>
+        </div>
+        <button onclick="loadProblem('${p.name.replace(/'/g, "\\'")}'); solve();"
+          style="font-size:0.65rem;padding:0.2rem 0.45rem;background:var(--accent-light);color:var(--accent);border:1px solid #bac8ff;border-radius:3px;cursor:pointer;font-weight:600;white-space:nowrap;">
+          Load &amp; Solve
+        </button>
+        <button onclick="deleteProblem('${p.name.replace(/'/g, "\\'")}');"
+          style="font-size:0.65rem;padding:0.2rem 0.45rem;background:var(--danger-bg);color:var(--danger);border:1px solid #ffa8a8;border-radius:3px;cursor:pointer;font-weight:600;">
+          ✕
+        </button>
+      </div>
+    `;
+                    })
+                    .join("");
+            }
+
+            function showToast(msg) {
+                const t = document.createElement("div");
+                t.textContent = msg;
+                Object.assign(t.style, {
+                    position: "fixed",
+                    bottom: "1.5rem",
+                    right: "1.5rem",
+                    zIndex: "9999",
+                    background: "#1a1d23",
+                    color: "white",
+                    padding: "0.55rem 1rem",
+                    borderRadius: "6px",
+                    fontSize: "0.78rem",
+                    fontWeight: "600",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+                    opacity: "0",
+                    transition: "opacity 0.2s",
+                });
+                document.body.appendChild(t);
+                requestAnimationFrame(() => {
+                    t.style.opacity = "1";
+                });
+                setTimeout(() => {
+                    t.style.opacity = "0";
+                    setTimeout(() => t.remove(), 300);
+                }, 2200);
+            }
+
+            window.addEventListener("DOMContentLoaded", () => {
+                addConstraint("x1 + x2 <= 6");
+                addConstraint("9x1 + 5x2 <= 45");
+                renderSavedList();
+            });
+        </script>
+    </body>
+</html>
