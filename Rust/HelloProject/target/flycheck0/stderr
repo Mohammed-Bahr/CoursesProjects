@@ -1,0 +1,54 @@
+   0.007820769s  INFO prepare_target{force=false package_id=HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject) target="HelloProject"}: cargo::core::compiler::fingerprint: fingerprint error for HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject)/Check { test: false }/TargetInner { name: "HelloProject", doc: true, ..: with_path("/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject/src/main.rs", Edition2024) }
+   0.007835659s  INFO prepare_target{force=false package_id=HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject) target="HelloProject"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject/target/debug/.fingerprint/HelloProject-68575a0bf492cb54/bin-HelloProject`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: __libc_start_call_main
+  17: __libc_start_main@@GLIBC_2.34
+  18: <unknown>
+   0.009722633s  INFO prepare_target{force=false package_id=HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject) target="HelloProject"}: cargo::core::compiler::fingerprint: fingerprint error for HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject)/Check { test: true }/TargetInner { name: "HelloProject", doc: true, ..: with_path("/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject/src/main.rs", Edition2024) }
+   0.009730907s  INFO prepare_target{force=false package_id=HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject) target="HelloProject"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject/target/debug/.fingerprint/HelloProject-a5b1e53a17bb26dd/test-bin-HelloProject`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: __libc_start_call_main
+  17: __libc_start_main@@GLIBC_2.34
+  18: <unknown>
+    Checking HelloProject v0.1.0 (/home/mohammed_bahr/Projects/CoursesProjects/Rust/HelloProject)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
