@@ -1,0 +1,135 @@
+# Transcript for 568yiQNx7jI
+
+## Transcript
+
+- People are angry at me because I keep
+- calling out the Pakistani, Bangladeshi,
+- South Asian Muslim community,
+- specifically the South Asian Muslim
+- community that has moved to the West.
+- But the reality is, I don't care if I'm
+- offending you. I'm calling it out for
+- what I see it be. And here's another
+- example of a white woman who's made a
+- mistake. Like many of the white people
+- have opened their doors to this
+- community, the South Asian, specifically
+- Pakistani Bangladeshi Muslim community
+- who's moving to the West in droves, uh
+- she's now having her buyer's remorse. A
+- white woman who converted to Islam is
+- now begging for help to get out of her
+- marriage to a Pakistani Muslim who
+- refused to allow her to work.
+- >> This is an appeal to any Muslim woman
+- that might be able to help me. My name
+- is Jana. I'm 24 and I'm a revert and I'm
+- being trapped in my Islamic marriage by
+- my husband. He is refusing to give me
+- Talaq. I've gone to the Islamic councils
+- and they have refused to give me a
+- fasque even though he has not supported
+- me for 9 months. He has not provided for
+- me financially whatsoever. Uh we live in
+- different states. Um he has not provided
+- me a house, clothes or food and I am
+- about to give up. I have uh nothing left
+- to try. I've contacted three Islamic
+- councils. Um and I'm one of them have
+- already told me that I need to produce
+- four witnesses even though he doesn't
+- have to bring any. Um, I have to argue
+- my case in front of a panel of imams and
+- I have to have three reconciliation
+- meetings with this man who has
+- financially abused me and coerced me and
+- try to manipulate me. Um, he has even
+- contacted my family and demanded them to
+- do something about the fact that I want
+- to leave this marriage. Um, I'm seeking
+- help. I'm feeling extremely vulnerable,
+- extremely desperate, and I feel like I
+- have no voice. If anyone is able to help
+- me,
+- >> uh, please leave a comment. Thank you.
+- >> Listen, even if you end up wanting to
+- marry a Muslim man, which it's hard for
+- me to understand why a white woman in
+- Australia, which it sounds like you in
+- Australia, would want to end up with a
+- Muslim man. But, you know, I'm not like
+- I'm not here to on Muslims. There
+- are plenty of wonderful Muslim people. I
+- understand the the religion can
+- sometimes be enticing. I don't
+- understand it, but I can understand
+- where you might be coming from. Um, I
+- just don't understand why a white woman,
+- especially a liberal white woman, which
+- I'm assuming you grew up in a liberal
+- household, would end up finding a a
+- silver lining in a Muslim marriage. But
+- let's just say you did,
+- baby. Pick and choose. Pick and choose
+- who you're marrying carefully. I'm not
+- saying like marrying an Arab per se is a
+- lot better, but a Pakistani man,
+- this culture they if you look into
+- Pakistan and the way that they treat
+- women, doesn't matter where they come
+- from in Pakistan and when they end up in
+- the west, the you look just all you need
+- to do is look at the rape gangs in the
+- UK that were run by Pakistani men.
+- But if you look at how women are treated
+- in Pakistan,
+- if you see how people of different
+- faiths and different religions are
+- treated in Pakistan, that's all you need
+- to see. That's all you need to
+- understand to understand that a marriage
+- into this culture would be a huge
+- mistake for you. Um, now obviously I
+- have the the the utmost sympathy for
+- this woman. She probably didn't know
+- what the hell she was getting herself
+- into, and now she probably regrets it. I
+- mean, it looks like she does.
+- But
+- may we not be confused at what the core
+- issue is here. The core issue is and it
+- comes down to immigration into these
+- countries. The longer the west, Europe,
+- Australia, UK, America keeps allowing
+- unfettered immigration for these
+- individuals from Pakistan, Bangladesh
+- and other South Asian countries who have
+- high rates of Muslim communities or or
+- Muslims from South Asian countries, the
+- longer the West keeps allowing
+- unfettered immigration of these people
+- into their society, you will keep seeing
+- stories like this because like I've said
+- and talked about and exposed before,
+- these individuals
+- have an inferiority complex. They
+- believe that they need to prove to their
+- Muslim brothers and sisters in Saudi
+- Arabia, which aren't the real Muslim
+- brothers in Saudi in uh Muslim brothers
+- and sisters in Saudi and Emirates, the
+- real Arabs who keep rejecting them, who
+- take them and a lot of times enslave
+- them in the Kuwait and Qatar. um
+- they have to show when they come to the
+- west that they're the real Muslims, that
+- they uh need to prove a point by
+- converting, by marrying in, by by
+- spreading, by building mosques.
+- It's a really cancerous community. We've
+- seen this time and time again. It's a
+- very cancerous community. Heed my
+- warning. If something is not done about
+- them, it will end up as a very big
+- issue. I really believe so. See you guys
+- next one.

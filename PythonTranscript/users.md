@@ -1,0 +1,989 @@
+# Transcript for 19WOD84JFxA
+
+## Transcript
+
+- today's video is proudly sponsored by
+- lenode
+- the note has been doing cloud computing
+- since 2003
+- which is actually before amazon web
+- services was even a thing
+- on the notes platform you can get your
+- server up and running
+- in minutes and they include all the
+- popular distributions
+- such as debian fedora ubuntu
+- and get this even arch linux and let's
+- be honest what could be better than a
+- linux focus cloud server provider that
+- lets you tell all of your friends i run
+- arch
+- the note has multiple server plans
+- available to make any app
+- scalable and flexible you could use it
+- to host a blog
+- a vpn server a minecraft server
+- and much more in fact lenode is the
+- platform of choice to host the entire
+- web presence of learnlinux tv
+- in addition the note offers 24x7 365
+- support
+- regardless of plan size so you can get
+- help from a live person when you need it
+- new users can get started right now with
+- one hundred dollars towards your new
+- account
+- and i highly recommend you check them
+- out because lenode is
+- awesome and now let's get started with
+- today's video
+- [Music]
+- [Music]
+- hello again everyone and welcome back to
+- learn linux tv
+- in today's video we're going to take a
+- look at user management in linux one of
+- the most important things that you'll
+- learn how to do
+- because well you have to keep track of
+- your users on your linux servers
+- and that's exactly what i'm going to
+- show you the basics of in this video
+- i'll show you how to add users how to
+- remove users
+- how to set their password and some other
+- stuff as well so
+- let's go ahead and get started
+- alright so here i am on my popos system
+- this is my thinkpad x1 extreme laptop
+- but it doesn't really matter which
+- distribution you're using or what
+- computer you have
+- there will be some variations here and
+- there but for the most part
+- when it comes to adding and removing
+- users it's the same on each distribution
+- now if i do run across something that i
+- think might be different from
+- one distro to another i'll be sure to
+- point it out let's go ahead and open up
+- a terminal and get started
+- and here's my terminal complete with a
+- ridiculously large font
+- i just want to make sure that everyone
+- is able to see the content
+- and understand what i'm doing let's go
+- ahead and get started
+- just like with most things when it comes
+- to linux there's more than one way that
+- we can do just about everything
+- and adding users is no exception to that
+- especially in my case considering i'm
+- using desktop linux i don't even need to
+- use the command line
+- at all however using the command line is
+- completely universal
+- there's many different desktop
+- environments and each one is going to
+- have a different process for adding
+- users
+- but each linux distribution is going to
+- have access to the user add command
+- which is the command that we'll be using
+- for the majority of this video
+- and when it comes to servers it's very
+- common that linux servers won't have a
+- desktop environment
+- another reason to learn the command line
+- anyway like i mentioned
+- the command that we will use to add a
+- new user to our system
+- is the user add command and considering
+- that we'll be making changes to the
+- system
+- we'll either need to be logged in as
+- root or we can simply use
+- sudo in order to run this command with
+- root privileges
+- which is required for any command that's
+- going to make changes to the server
+- and of course adding a user is making a
+- system-wide change
+- so of course we're going to need root
+- privileges or we could just use sudo if
+- we have that installed
+- and most of you should after we type
+- user add
+- we type the name of the user that we
+- actually want to add to the system
+- and that will complete the command
+- before we
+- actually add a new user let's take a
+- look at some foundational concepts
+- first before we get started on that
+- and the first thing that i recommend you
+- do is understand which users you have on
+- your system already
+- what some people do is they will simply
+- list the contents of the home directory
+- because generally speaking most users
+- will have his or her own home directory
+- underneath
+- home and you can see mine right here so
+- i have a home directory
+- and we can glean from this that my user
+- j is on the system
+- now you probably already knew that
+- because well you can see my username
+- right here in the prompt
+- so you already knew that at least my
+- user account existed here
+- and here it is but checking the contents
+- of the home directory
+- is not really the best way to find out
+- how many users
+- or which users in particular you have
+- already on your server
+- i mean from the output here you'd
+- probably assume that my user account is
+- the only user on the system
+- but actually that's not true what i want
+- to do right now
+- is make sure that you're aware of the
+- existence of a very special file
+- and that's the etsy password file
+- password is abbreviated
+- that's not a typo that's actually what
+- the file is named
+- but i'll refer to it as etsy password
+- which is common in the linux community
+- even though it's abbreviated so the cat
+- command is just going to show me the
+- contents of that file
+- and you can see that the text is wrapped
+- here so what i'm going to do
+- is just lower the font size a bit
+- and as you can see we have quite a few
+- users on this system not just mine we
+- have many more
+- we see my user right here
+- and each user is on their own line so
+- for example
+- if i was to again cap the contents of
+- the etsy password file
+- and then i pipe it into the wc command
+- which stands for
+- word count and that's a bonus command it
+- wasn't even supposed to be part of the
+- video but you're welcome
+- anyway what i'm going to do is add the
+- dash l option to the word count command
+- what that's going to do is give me the
+- count of how many lines there are so as
+- you can see from the output there's 44
+- users on the system
+- so definitely a lot more than the one
+- you saw earlier when i listed the
+- contents of slash home
+- and in this file every user on the
+- system has its own line in this file
+- the first column shows the name of the
+- user and then there's other columns that
+- follow after that
+- i'll go over this file in a little bit
+- more detail later on
+- but at this point in the video i want to
+- make sure that you're aware of this file
+- that you're aware that it exists
+- and that you're aware of what its
+- purpose is its purpose is to contain a
+- listing
+- and the options that are associated with
+- the user accounts on your server
+- but either way it's just a good idea to
+- know whether or not the user is on the
+- system
+- already and by checking the contents of
+- this file
+- we can determine that now one of the
+- things i'm going to do
+- is cap this out again that i'm going to
+- grep
+- so that way the only line of output that
+- it's going to produce
+- is just the one line that contains my
+- user account
+- and what i want to point you to is this
+- number right here
+- where it shows 1000. now again i'll go
+- over this file in more detail later
+- i think it's a good idea to understand
+- what this number is
+- that number refers to the user id aka
+- uid every user has his or her
+- own uid as you can see here the uid of
+- my user is 1000.
+- most distributions of linux actually ask
+- you to create a user account during the
+- installation process
+- and that first user is well pretty much
+- almost
+- always given the uid of 1000.
+- i'll talk more about uids a bit later
+- but that's just another thing that i
+- wanted you to be aware of
+- anyway let's go back to the user ad
+- command
+- after all that's why we're here in the
+- first place we want to know how to add
+- and remove users and the user add
+- command
+- as the name would imply is the command
+- that we would use
+- to add a user to the system i'm logged
+- in as j
+- so i can't really use this command like
+- i mentioned earlier without sudo
+- or just logging in as root so i'm going
+- to add sudo to the command
+- and then at the end i'm going to give it
+- the name of a user i want to create
+- so i'm going to tell it to create a user
+- with the name of foxmolder
+- so for all of you x-files fans out there
+- yes that was an easter egg and the
+- x-files was
+- actually my favorite sci-fi series
+- growing up i loved watching that every
+- sunday night
+- great times anyway what i'm going to do
+- right now is press
+- enter and now it's asking me for my
+- password
+- my user password to verify that i have
+- access to the sudo command
+- and it didn't say anything but it also
+- doesn't appear to have failed either
+- so if i cap the contents of etsy
+- password again
+- let's see what happens and as you can
+- see the very last
+- line in this file shows that user was
+- created
+- now if you recall the uid for my user
+- was uid
+- 1000 for fox moulder that user got uid
+- 1001. now something to keep in mind is
+- that when you add a user to a linux
+- system
+- it's going to assign the next available
+- uid to that user
+- now my user already had assigned the uid
+- of 1000. so
+- that uid is no longer available when i
+- created the account fox molder
+- it just incremented it by one 1001
+- that's the uid that it was provided as
+- you can see here
+- now you'll notice from the output that
+- there's some uids here that are much
+- lower than 1000 for example 122 121 and
+- so on
+- on most distributions of linux normal
+- user accounts
+- basically user accounts that are
+- associated with interactive logins or
+- basically user ids that are going to be
+- used by a human
+- those are given uids 1000 and above
+- uids below 1000 are considered system
+- accounts
+- and i'll talk a little bit more about
+- system accounts in a few minutes but i
+- just wanted you to be aware of that
+- distinction we have
+- user accounts we also have system user
+- accounts
+- and the user add command by default adds
+- normal user accounts
+- now i added a user for foxmolder we did
+- that with the previous command that we
+- entered let's also list the contents of
+- the home directory
+- and see whether or not that user has a
+- home directory underneath
+- home and it doesn't why is that
+- now depending on your distribution it
+- might have
+- actually created a home directory for
+- that user on my end
+- it didn't this is one thing that
+- actually does differ
+- from one distribution to another each
+- distribution is going to set their own
+- defaults for the user add command
+- so on your end it might have created a
+- home directory on my end well
+- i wasn't so fortunate so let's take a
+- quick detour here
+- and what i'm going to do is point you to
+- another file
+- and that file is the etsy default user
+- ad file
+- now i'm not going to go over this
+- particular file in too much detail
+- but basically what it does is sets the
+- defaults for user ad
+- each distribution is free to supply
+- their own version
+- of this particular file so as you can
+- see here we have
+- shell equals slash bin slash sh
+- if you want to use a different default
+- shell then you'll change it right here
+- but basically this file just sets the
+- defaults and again
+- it's going to be different from one
+- distribution to another
+- and it's entirely possible that on your
+- distribution you may not even have this
+- file at all
+- now all i want at this point is for you
+- to be aware that this file exists
+- what you might think that i'm going to
+- recommend is that you customize this
+- file with the defaults that you prefer
+- but i'm not going to do that instead i
+- recommend that you be explicit
+- say what you mean and mean what you say
+- so even if your distribution did create
+- a home directory here
+- i still recommend that you tell the user
+- add command
+- specifically that you want a home
+- directory now on your end
+- that might be redundant if it already
+- created a home directory for the user
+- that you created
+- then why should you bother and add a
+- redundant option to tell it to create a
+- home directory when it already did
+- now it's a good idea to basically be
+- explicit
+- when it comes to linux include all the
+- options
+- that's especially true when you're
+- writing scripts because you want your
+- scripts to be portable
+- maybe you have a script that you want to
+- run on multiple distributions
+- if that's the case you'll probably want
+- the same output every time that script
+- runs
+- so if you are using the user add command
+- as part of a script
+- you'll probably want to add all the
+- appropriate options to ensure
+- that all the user accounts that you
+- create are always created the same way
+- and i recommend that you be explicit not
+- just when you're creating scripts
+- but basically just get in the habit of
+- always doing that
+- so what i want to do is re-add the user
+- but i want to add the user with a home
+- directory this time
+- but that requires another detour because
+- the user already exists
+- i could create another user but what i'm
+- going to do instead is take this
+- opportunity to show you how to remove a
+- user account
+- so to remove a user account you can use
+- the user dell command
+- the user delete command however you want
+- to say it
+- we'll need to use sudo and then we give
+- it the name of the user that we want to
+- delete
+- but be very careful here when you run a
+- command like this on a linux system the
+- linux system is going to make the
+- assumption
+- that you know what you're doing so just
+- make sure that you're typing the
+- username
+- that's actually the user you want to
+- delete just be very careful
+- so we created a user earlier named
+- foxmolder i'm going to delete that user
+- account
+- maybe moulder got abducted by aliens or
+- something i don't know
+- but we're going to remove them from the
+- system and that's it
+- now that user didn't even have a home
+- directory to begin with
+- but the thing is though if that user did
+- have a home directory
+- they would probably still have a home
+- directory here because of the user
+- delete command
+- that doesn't delete the home directory
+- for the user when you delete a user by
+- default
+- just keep that in mind we'll return to
+- that in a few minutes but anyway
+- we can see here that that particular
+- user account is gone
+- so let's go ahead and add that user back
+- to the system
+- and at the same time make sure that a
+- home directory is also created for that
+- user
+- when we create the user itself
+- and this is the command right here that
+- we used earlier so what i'm going to do
+- is add the dash
+- m option i'll press enter
+- no output just like last time but the
+- difference
+- at least in my case is that the user
+- actually has a home directory right now
+- we see that right here
+- the line is wrapped a bit you get the
+- idea that user does indeed have a home
+- directory we added the dash m
+- option which is what you see here that
+- specifically tells user ad that we want
+- a home directory
+- when we create this user
+- so let's talk about removing the user
+- again but this time
+- also removing the home directory as well
+- and again we see that user does indeed
+- have a home directory
+- and earlier when we remove this account
+- the first time
+- this is the command that we used right
+- here so to remove a home directory
+- we add the dash r option to this command
+- that's going to like i mentioned
+- remove the user account and also their
+- home directory
+- now before i actually press enter here i
+- do want to mention that
+- before you start removing a home
+- directory for a user
+- for example if you are working at a
+- company you'll want to make sure that
+- you should remove their home directory
+- before you actually do it
+- for example if an employee leaves the
+- company
+- that employee supervisor might need
+- access to their files in order to finish
+- any projects that they might have been
+- working on
+- but if you delete their files well they
+- can't do that
+- perhaps more importantly a lot of
+- companies out there
+- they have requirements for how long to
+- retain their employees data
+- and if you're actually working in a
+- company it's extremely
+- important that you ask hr or whoever it
+- is you ask there
+- what the retention policy is for
+- employee data
+- you'll want to make sure that you are in
+- compliance with any policies that might
+- exist
+- maybe a company might have a policy
+- where they have to retain
+- user records for a few years if you
+- delete a user account with their home
+- directory then you are not in compliance
+- now if your company does not have a
+- policy when it comes to user data
+- retention or data retention in general
+- it's actually one of those things that
+- should definitely be drafted
+- let somebody know anyway i'm going to
+- press enter
+- we can ignore this message right here
+- about the mail spool
+- that's beyond the scope of this video
+- that is a normal message though so
+- nothing to be concerned with
+- we can check the contents of the home
+- directory again and that home directory
+- is in fact gone
+- another thing that i want to show you
+- guys is how to set a password for a user
+- because
+- when we added the fox molder user it
+- didn't even ask us what we wanted the
+- password to be for that user
+- in fact the user had no password at all
+- now what i'm going to do
+- is just add the user back to the system
+- i'm going to add it with the home
+- directory
+- so nothing different i'll just press
+- enter
+- user has a home directory and the user
+- is on the system
+- so let's take a look at how we set a
+- password for the user
+- and to set a password for a user or even
+- change our own password for that matter
+- we have a dedicated command the past wd
+- command
+- now if i entered this by itself right
+- now
+- it's going to assume that i want to
+- change the password for the user
+- that i'm currently logged in with so if
+- you had a user for example that came to
+- you and said
+- how do i change my password you would
+- ask them to run the passwd command you
+- don't even need to get involved
+- they can change their own password
+- there's nothing for you as the
+- administrator to do in this regard
+- other than to know that the passwd
+- command exists
+- and i'm going to actually use it right
+- now i'm going to make it fail on purpose
+- though
+- and the reason why is because i don't
+- want to change my password right now
+- but the first thing that it does is it
+- asks you for your current password
+- which i've entered and then it asks you
+- for your new password what do you want
+- your new password to be
+- which i've entered and then you enter it
+- again
+- and it's telling me that the passwords
+- don't match and that was intentional
+- if the passwords did match then the
+- password i chose right then and there
+- would become my password
+- so that's how you change the password
+- for the user that you're logged in with
+- but actually i brought that up in
+- regards to setting a password for
+- another user
+- so for example if you have someone
+- that's going to start logging into your
+- linux server
+- you can set a temporary password for
+- them and then ask them to change it
+- in a future video we'll be going over
+- password expiration
+- but we're going to omit that right now
+- just to keep things simple
+- so to change a password for another user
+- you can type sudo
+- because in order to change a password
+- for another user you do need root
+- privileges or
+- at least access to sudo in order to be
+- able to do that
+- then you can run passwd and then the
+- name of the user that you want to change
+- the password for
+- or in this case you want to set the
+- password so i'll type the name of the
+- user right here
+- now notice that it didn't ask me for the
+- user's current password
+- you might think that the reason why it
+- didn't ask me was because the user
+- didn't even have a password we didn't
+- even set a password
+- but if you have access to sudo or the
+- root user it's never going to ask you
+- for the user's current password
+- i mean root is pretty much like god mode
+- if you've ever played doom for example
+- it's the all-powerful account that can
+- do basically
+- everything so root doesn't need to know
+- the password of the user
+- to change or set the password so even if
+- the user
+- already had a password it doesn't care
+- you're setting the password
+- and anyone that has access to root has
+- permission to set a password for another
+- user
+- so i'm going to type it in right now
+- and again and it said password updated
+- successfully so
+- i was able to add a password for the fox
+- motor user
+- now let's go ahead and see an example of
+- creating a system user
+- a system user is very useful when you
+- are doing any kind of automation
+- for example maybe you have an accounting
+- department
+- and you need to run a financial report
+- for them every week
+- that sounds tedious to me and to be
+- honest with you
+- doing a financial report that doesn't
+- really excite me and if you're like me
+- you'll probably want to automate that
+- report so you'll never be bothered to do
+- it
+- but if you're going to automate
+- something like a process or some sort of
+- task
+- then it makes sense to not use your user
+- account for it
+- create a system user and actually you
+- can use a system user with cron
+- to run a scheduled job which is the best
+- way to do it
+- now i'll be covering kron in a future
+- video in this series
+- go ahead and check the playlist to see
+- if it's already there but for now
+- just keep in mind that system users are
+- useful when you want something to run in
+- the background
+- and it's not something that's associated
+- to any one person
+- so let's go ahead and add a system user
+- right now so again it's sudo and then
+- user add
+- and we're going to use dash r and that
+- dash
+- r option actually allows us to designate
+- that we want to create a system user
+- specifically
+- not a normal user and what i'm going to
+- do is call the system user assist user
+- just like that i'll press enter
+- and what i'm going to do is cap the
+- contents of etsy password again
+- and i'm going to grep for sysuser
+- because i only want to see that one line
+- and we see it right here now notice that
+- the uid
+- is 998. it doesn't start with 1000.
+- earlier when we created a user that user
+- was assigned uid
+- 1001 but this user was actually assigned
+- a uid
+- of less than a thousand and that's
+- generally the case
+- normal user accounts will be provided a
+- uid of a thousand or greater
+- and then system users will generally be
+- provided a uid
+- of less than one thousand and that
+- distinction doesn't really matter
+- so much other than you can deduce that a
+- user is most likely a system user based
+- on the uid
+- in my case i'm using a desktop
+- distribution of linux
+- and most of the time desktop
+- distributions will not show a system
+- user on the login screen
+- now that does vary from one distribution
+- to another
+- but generally speaking most
+- distributions will not show you ids on
+- the login screen
+- that are under 1000. that's important
+- because if it did show you ids that are
+- under a thousand
+- then in my case there would be probably
+- around
+- 44 user accounts shown on the login
+- screen
+- and that's very messy but anyway
+- at this point i just want you to be
+- aware of the dash r
+- option and just keep in mind that that
+- allows you to create a system user
+- and a system user again is a user that
+- generally doesn't log
+- in interactively and is used for things
+- that are going to run in the background
+- schedule tasks processes things like
+- that
+- now that actually completes the main
+- part of this video the whole goal was to
+- show you the basics of user management
+- and
+- i've already showed you how to add a
+- user how to remove a user
+- and some options with the user add
+- command now of course you could just
+- type
+- man and then user add and then you get a
+- bunch of options here
+- as far as some of the additional things
+- that you can do with that command
+- but as far as the basics are concerned
+- which was the actual purpose of this
+- entire video were covered there but i'm
+- not going to end the video
+- just yet there's one more thing that i
+- want to show you guys
+- and as i promised earlier in the video i
+- told you that i would go over the
+- contents of the etsy password file to
+- help you guys
+- understand it better let's go ahead and
+- do that right now
+- now as you recall
+- the etsy password file that contains a
+- listing of all the users on the system
+- there's quite a few lines there so what
+- i'm going to do is lower the font size a
+- bit
+- just to make sure you can see everything
+- hopefully that's not too small
+- we have several different columns on
+- each line and each column is separated
+- by a colon
+- now the first column is the username no
+- surprise there
+- the second column which is this one
+- right here
+- that just refers to the password
+- actually it's a little bit more
+- complicated than that
+- but it essentially means that we have an
+- encrypted password in use here
+- and nowadays we don't really use any
+- other
+- kind of password we always use hashed
+- passwords which is what this refers to
+- it just means that the password for this
+- user is hashed
+- it's not shown here in some ways that's
+- a carryover from the olden days which is
+- why i'm not going to go into too much
+- detail on that
+- but you'll probably almost if not always
+- see an x
+- in that field continuing we have the uid
+- right here as i talked about earlier
+- the next field is the group id
+- i've already explained what a uid is
+- earlier in the video
+- and a gid or group id is essentially the
+- same thing
+- but for groups i'll be covering groups
+- in a separate video
+- so don't worry about that right now this
+- field here
+- that is the user information field and
+- you might see that referred to as the
+- geckos field
+- g-e-c-o-s so it looks like that
+- but i like to refer to it as the user
+- information field
+- and it's most commonly used for the
+- first and last name as you see here
+- that user information field is
+- completely optional it's perfectly fine
+- to go ahead and skip it and you'll
+- actually see it skipped
+- in other user accounts and other lines
+- you'll see like two colons together
+- that just means that that information
+- isn't there it's blank
+- continuing on we have the home directory
+- for the user in my case
+- slash home slash j that's where my home
+- directory is
+- so it's essentially telling the linux
+- system where to find the home directory
+- for that user
+- the last column here that refers to the
+- shell
+- that is designated for that user when a
+- user logs in their shell is activated
+- in my case slash bin slash bash that's
+- the shell
+- that i'm going to be using when i log in
+- so for example if i type
+- echo then dollar sign and then shell in
+- all caps
+- you can see that my shell is slash bin
+- slash bash
+- and that was set right here and again
+- this is the shell that's going to start
+- up as soon as i log
+- in now you will see other things here
+- instead of slash bin
+- sh or bin bash for example user s bin no
+- login
+- and you'll see other variations of this
+- as well user aspen no login means well
+- that user is not going to be able to log
+- in and when it comes to system users
+- we really don't want them to log in and
+- generally speaking
+- system users are not associated to a
+- human being
+- so there's no reason for them to
+- interactively log in and they don't have
+- to log in
+- in order to run reports run command
+- scripts or anything like that
+- often people will use system accounts to
+- automate things like i mentioned earlier
+- and that's essentially all this is user
+- spin no login
+- means basically what it says when that
+- user tries to log in even if you did set
+- a password for that user
+- they'll be denied it's going to attempt
+- to run user spin no login
+- which is basically going to deny the
+- login
+- now let's go ahead and take a look at
+- the etsy shadow file
+- now real quick
+- you'll recall that i mentioned that we
+- have an x rate here for most if not all
+- the users
+- and that x refers to the fact that that
+- user has a hashed password
+- it's almost always going to be the case
+- we really don't want to store the user's
+- password in plain text in the etsy
+- password file
+- we would rather hash it and store it
+- somewhere else
+- so if we take a look at the etsy shadow
+- file
+- now as an aside you will need sudo in
+- order to view this file unlike the etsy
+- password file
+- as you can see i was able to run cat
+- etsy password with no sudo at all
+- but i can't get away with that when it
+- comes to etsy shadow so
+- i will add sudo now just like with the
+- etsy password file
+- with the etsy shadow file we have a
+- bunch of different columns on each line
+- and each column is separated by a single
+- colon
+- on the left we have the username
+- and that's the username right here and
+- to make it a little bit easier
+- i'm going to grep for my user account
+- here
+- just to get it down to one line makes it
+- a little bit easier but in the first
+- column again we have the username
+- in the second column which is actually
+- ridiculously long
+- we have the actual hash for the password
+- now this isn't my actual password
+- it's just a hash of my password that's
+- an important distinction
+- so moving on we have this field right
+- here
+- and that number refers to the number of
+- days since the unix epoch that the
+- password was last changed
+- for those that aren't already aware the
+- unix epoch is january 1st
+- of 1970. therefore we could read that
+- column as a password having last been
+- changed
+- that many days after the unix epoch so
+- in this case
+- 18 807 days
+- the fourth column tells us how many days
+- are required to pass
+- before the user will be able to change
+- their password again in this example
+- the user can change their password well
+- anytime
+- and they can do that because the number
+- of days is set to zero zero means any
+- time
+- this column right here refers to how
+- many days until a password change is
+- required
+- in this case 99 999 days
+- since the unix epoch will pass until i'm
+- required
+- to change my password so i guess it may
+- as well be infinite
+- in a future video we'll explore user
+- password expiration
+- so don't worry about that too much right
+- now so here we have number seven
+- and this field refers to how many days
+- until the user will be reminded to
+- change their password
+- so in this case if the user's password
+- is going to expire within seven days
+- it's going to show them a message on the
+- shell but
+- well i mean there's quite a few days
+- until this password is going to expire
+- so even though it shows 7 i'm probably
+- never going to see that message
+- now here we have several columns that
+- are not
+- set at all so the next field would have
+- showed us how many days
+- until the user password is going to be
+- locked i never actually set a time for
+- the password to be locked so that's not
+- set
+- we also have a field that would normally
+- show us how many days until the account
+- is disabled
+- but that's not set either now i went
+- over the last fields here fairly quickly
+- and that's because you really don't need
+- to memorize that i mean you can
+- if you want to but we have a dedicated
+- command that we would use
+- to lock a user account to set a password
+- expiration and things like that and more
+- importantly
+- a dedicated command we can use to check
+- that information
+- without having to remember those fields
+- so i wouldn't worry about it too much
+- we'll get to that when we cover password
+- expiration in a future video
+- so there you go there's actually
+- additional concepts that we could have
+- gone over in this video when it comes to
+- user management
+- but i decided to save those for future
+- videos again
+- check the playlist for this series
+- because other videos on user management
+- might already exist and if they don't i
+- will create those for you very soon
+- make sure you subscribe so you'll be the
+- first to see those videos as soon as
+- they're out
+- regardless thank you so much for
+- watching i really appreciate it
+- and i'll see you next time
+- [Music]
+- you
